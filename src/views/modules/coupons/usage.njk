@@ -1,0 +1,250 @@
+{% extends "layouts/admin.njk" %}
+
+{% block title %}{{ coupon.code }} - Usage Report - {{ APP_NAME }}{% endblock %}
+
+{% set pageTitle = coupon.code + " - Usage Report" %}
+{% set breadcrumbSection = "Coupons" %}
+{% set breadcrumbSectionUrl = "/coupons" %}
+{% set breadcrumbActive = "Usage Report" %}
+{% set currentPage = "coupons" %}
+
+{% block content %}
+<div class="row">
+    <!-- Usage Statistics -->
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Coupon Usage Statistics</h5>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-success btn-sm" onclick="exportUsageData()">
+                        <i class="bx bx-download"></i> Export Data
+                    </button>
+                    <a href="/coupons/{{ coupon._id }}/edit" class="btn btn-primary btn-sm">
+                        <i class="bx bx-edit-alt"></i> Edit Coupon
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar flex-shrink-0 me-3">
+                                <span class="avatar-initial rounded bg-label-primary">{{ coupon.currentUsageCount or 0 }}</span>
+                            </div>
+                            <div>
+                                <small class="text-muted">Total Uses</small>
+                                <h6 class="mb-0">{{ coupon.currentUsageCount or 0 }}</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar flex-shrink-0 me-3">
+                                <span class="avatar-initial rounded bg-label-success">${{ totalSavings or '0.00' }}</span>
+                            </div>
+                            <div>
+                                <small class="text-muted">Total Savings</small>
+                                <h6 class="mb-0">${{ totalSavings or '0.00' }}</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar flex-shrink-0 me-3">
+                                <span class="avatar-initial rounded bg-label-info">{{ uniqueCustomers or 0 }}</span>
+                            </div>
+                            <div>
+                                <small class="text-muted">Unique Customers</small>
+                                <h6 class="mb-0">{{ uniqueCustomers or 0 }}</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar flex-shrink-0 me-3">
+                                <span class="avatar-initial rounded bg-label-warning">${{ averageOrderValue or '0.00' }}</span>
+                            </div>
+                            <div>
+                                <small class="text-muted">Avg Order Value</small>
+                                <h6 class="mb-0">${{ averageOrderValue or '0.00' }}</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Coupon Details -->
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Coupon Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <span class="badge bg-primary fs-5">{{ coupon.code }}</span>
+                </div>
+                
+                <div class="mb-2">
+                    <strong>Name:</strong> {{ coupon.name }}
+                </div>
+                
+                <div class="mb-2">
+                    <strong>Type:</strong>
+                    {% if coupon.discountType == 'percentage' %}
+                        {{ coupon.discountValue }}% OFF
+                    {% elif coupon.discountType == 'fixed' %}
+                        ${{ coupon.discountValue }} OFF
+                    {% else %}
+                        FREE SHIPPING
+                    {% endif %}
+                </div>
+                
+                {% if coupon.minimumOrderAmount %}
+                <div class="mb-2">
+                    <strong>Min Order:</strong> ${{ coupon.minimumOrderAmount }}
+                </div>
+                {% endif %}
+                
+                <div class="mb-2">
+                    <strong>Valid Period:</strong><br>
+                    <small>{{ coupon.startDate | date('MMM DD, YYYY') }} - {{ coupon.endDate | date('MMM DD, YYYY') }}</small>
+                </div>
+                
+                {% if coupon.usageLimit %}
+                <div class="mb-2">
+                    <strong>Usage Limit:</strong> {{ coupon.usageLimit }}
+                    <div class="progress mt-1">
+                        <div class="progress-bar" 
+                             style="width: {{ ((coupon.currentUsageCount / coupon.usageLimit) * 100) }}%">
+                        </div>
+                    </div>
+                    <small class="text-muted">{{ coupon.currentUsageCount }} / {{ coupon.usageLimit }} used</small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Usage Timeline Chart -->
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Usage Over Time</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="usageChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Usage Details Table -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Usage History</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="usageTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Order #</th>
+                        <th>Customer</th>
+                        <th>Order Amount</th>
+                        <th>Discount Applied</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- TODO: Populate with actual usage data -->
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            No usage data available yet
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="/assets/vendor/libs/chart-js/chart.js"></script>
+<script src="/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initializeUsageChart();
+    initializeUsageTable();
+});
+
+function initializeUsageChart() {
+    const ctx = document.getElementById('usageChart').getContext('2d');
+    
+    // TODO: Replace with actual data from backend
+    const chartData = {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+            label: 'Coupon Usage',
+            data: [12, 19, 15, 25, 22, 30],
+            backgroundColor: 'rgba(54, 162, 235, 0.1)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 2,
+            fill: true
+        }]
+    };
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: chartData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+}
+
+function initializeUsageTable() {
+    $('#usageTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: '/coupons/{{ coupon._id }}/usage-data',
+            type: 'POST'
+        },
+        columns: [
+            { data: 'date', name: 'createdAt' },
+            { data: 'orderNumber', name: 'orderNumber' },
+            { data: 'customer', name: 'customerEmail' },
+            { data: 'orderAmount', name: 'orderAmount' },
+            { data: 'discountApplied', name: 'discountAmount' },
+            { data: 'actions', orderable: false, searchable: false }
+        ],
+        order: [[0, 'desc']],
+        pageLength: 25,
+        responsive: true
+    });
+}
+
+function exportUsageData() {
+    window.open(`/coupons/{{ coupon._id }}/usage/export`, '_blank');
+}
+</script>
+{% endblock %}

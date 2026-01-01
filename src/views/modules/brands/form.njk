@@ -1,0 +1,472 @@
+{% extends "layouts/admin.njk" %}
+
+{% block title %}{{ 'Edit Brand' if brand else 'Add Brand' }} - {{ APP_NAME }}{% endblock %}
+
+{% set pageTitle = 'Edit Brand' if brand else 'Add Brand' %}
+{% set breadcrumbSection = "Brands" %}
+{% set breadcrumbSectionUrl = "/brands" %}
+{% set breadcrumbActive = 'Edit Brand' if brand else 'Add Brand' %}
+{% set currentPage = "brands" %}
+
+{% block content %}
+<form id="brandForm" action="{{ '/brands/' + brand._id if brand else '/brands' }}" method="POST" enctype="multipart/form-data">
+    {% if brand %}
+    <input type="hidden" name="_method" value="PUT">
+    {% endif %}
+    
+    <div class="row">
+        <!-- Main Brand Information -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Brand Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label class="form-label" for="name">Brand Name <span class="text-danger">*</span></label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="name"
+                                       name="name" 
+                                       placeholder="Enter brand name"
+                                       value="{{ brand.name if brand else formData.name or '' }}"
+                                       required>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label" for="slug">Slug <span class="text-danger">*</span></label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="slug"
+                                       name="slug" 
+                                       placeholder="brand-slug"
+                                       value="{{ brand.slug if brand else formData.slug or '' }}"
+                                       required>
+                                <div class="invalid-feedback"></div>
+                                <div class="form-text">URL friendly version of the name</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label" for="website">Website URL</label>
+                                <input type="url" 
+                                       class="form-control" 
+                                       id="website"
+                                       name="website" 
+                                       placeholder="https://example.com"
+                                       value="{{ brand.website if brand else formData.website or '' }}">
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label class="form-label" for="description">Description</label>
+                                <textarea class="form-control" 
+                                          id="description"
+                                          name="description" 
+                                          rows="4"
+                                          placeholder="Enter brand description">{{ brand.description if brand else formData.description or '' }}</textarea>
+                                <div class="invalid-feedback"></div>
+                                <div class="form-text">Maximum 1000 characters</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEO Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">SEO Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label" for="seoTitle">SEO Title</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="seoTitle"
+                               name="seoTitle" 
+                               placeholder="SEO optimized title"
+                               value="{{ brand.seoTitle if brand else formData.seoTitle or '' }}"
+                               maxlength="60">
+                        <div class="form-text">
+                            <span id="seoTitleCount">0</span>/60 characters
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label" for="seoDescription">SEO Description</label>
+                        <textarea class="form-control" 
+                                  id="seoDescription"
+                                  name="seoDescription" 
+                                  rows="3"
+                                  placeholder="SEO meta description"
+                                  maxlength="160">{{ brand.seoDescription if brand else formData.seoDescription or '' }}</textarea>
+                        <div class="form-text">
+                            <span id="seoDescCount">0</span>/160 characters
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label" for="seoKeywords">SEO Keywords</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="seoKeywords"
+                               name="seoKeywords" 
+                               placeholder="keyword1, keyword2, keyword3"
+                               value="{% if brand and brand.seoKeywords %}{{ brand.seoKeywords.join(', ') }}{% else %}{{ formData.seoKeywords or '' }}{% endif %}">
+                        <div class="form-text">Separate keywords with commas</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Brand Logo -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Brand Logo</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Logo Image</label>
+                        <input type="file" 
+                               class="form-control" 
+                               name="logo" 
+                               accept="image/*"
+                               onchange="previewImage(this, 'logoPreview')">
+                        <div class="form-text">Recommended: 200x200px, Max: 2MB</div>
+                    </div>
+                    
+                    <div id="logoPreview" class="text-center">
+                        {% if brand and brand.logo %}
+                        <img src="{{ brand.logo }}" alt="{{ brand.name }}" class="img-fluid rounded" style="max-width: 150px;">
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeLogo()">
+                                <i class="bx bx-trash"></i> Remove Logo
+                            </button>
+                        </div>
+                        {% else %}
+                        <div class="border rounded p-3 text-muted">
+                            <i class="bx bx-image fs-1 d-block mb-2"></i>
+                            <small>No logo uploaded</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status & Settings -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Status & Settings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   id="isActive" 
+                                   name="isActive"
+                                   {{ 'checked' if (brand and brand.isActive) or (not brand) else '' }}>
+                            <label class="form-check-label" for="isActive">
+                                Active Status
+                            </label>
+                        </div>
+                        <div class="form-text">Enable this brand for display</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   id="isFeatured" 
+                                   name="isFeatured"
+                                   {{ 'checked' if (brand and brand.isFeatured) else '' }}>
+                            <label class="form-check-label" for="isFeatured">
+                                Featured Brand
+                            </label>
+                        </div>
+                        <div class="form-text">Show in featured brands section</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label" for="sortOrder">Sort Order</label>
+                        <input type="number" 
+                               class="form-control" 
+                               id="sortOrder"
+                               name="sortOrder" 
+                               value="{{ brand.sortOrder if brand else formData.sortOrder or '0' }}"
+                               min="0"
+                               disabled="{{ true if not brand else false }}">
+                        <div class="form-text">Higher numbers appear first</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Information -->
+            {% if brand %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Products:</span>
+                        <span>{{ brand.productsCount or 0 }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Created:</span>
+                        <span>{{ brand.createdAt | date('MMM DD, YYYY') }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Updated:</span>
+                        <span>{{ brand.updatedAt | date('MMM DD, YYYY') }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Form Actions -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bx bx-save"></i>
+                            {{ 'Update Brand' if brand else 'Create Brand' }}
+                        </button>
+                        <a href="/brands" class="btn btn-outline-secondary">
+                            <i class="bx bx-arrow-back"></i>
+                            Back to Brands
+                        </a>
+                        {% if brand %}
+                        <button type="button" class="btn btn-outline-danger" onclick="deleteBrand('{{ brand._id }}', '{{ brand.name }}')">
+                            <i class="bx bx-trash"></i>
+                            Delete Brand
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initializeForm();
+    updateCharacterCounts();
+});
+
+function initializeForm() {
+    const nameInput = document.getElementById('name');
+    const slugInput = document.getElementById('slug');
+    const seoTitleInput = document.getElementById('seoTitle');
+    const seoDescInput = document.getElementById('seoDescription');
+
+    // Auto-generate slug from name
+    nameInput.addEventListener('input', function() {
+        if (!slugInput.dataset.manual) {
+            const slug = generateSlug(this.value);
+            slugInput.value = slug;
+        }
+    });
+
+    // Mark slug as manually edited
+    slugInput.addEventListener('input', function() {
+        this.dataset.manual = 'true';
+        this.value = generateSlug(this.value);
+    });
+
+    // Character count for SEO fields
+    seoTitleInput.addEventListener('input', updateCharacterCounts);
+    seoDescInput.addEventListener('input', updateCharacterCounts);
+}
+
+function generateSlug(text) {
+    return text
+        .toString()
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w\-]+/g, '')
+        .replace(/\-\-+/g, '-')
+        .replace(/^-+/, '')
+        .replace(/-+$/, '');
+}
+
+function updateCharacterCounts() {
+    const seoTitle = document.getElementById('seoTitle').value;
+    const seoDesc = document.getElementById('seoDescription').value;
+    
+    document.getElementById('seoTitleCount').textContent = seoTitle.length;
+    document.getElementById('seoDescCount').textContent = seoDesc.length;
+}
+
+function validateForm() {
+    const name = document.getElementById('name').value.trim();
+    const slug = document.getElementById('slug').value.trim();
+    
+    if (!name) {
+        showFieldError('name', 'Brand name is required');
+        return false;
+    }
+    
+    if (!slug) {
+        showFieldError('slug', 'Slug is required');
+        return false;
+    }
+    
+    // Validate slug format
+    if (!/^[a-z0-9\-]+$/.test(slug)) {
+        showFieldError('slug', 'Slug can only contain lowercase letters, numbers, and hyphens');
+        return false;
+    }
+    
+    return true;
+}
+
+function showFieldError(fieldName, message) {
+    const field = document.getElementById(fieldName);
+    const feedback = field.parentNode.querySelector('.invalid-feedback');
+    
+    field.classList.add('is-invalid');
+    if (feedback) {
+        feedback.textContent = message;
+    }
+    
+    // Scroll to error
+    field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function clearFieldErrors() {
+    document.querySelectorAll('.is-invalid').forEach(field => {
+        field.classList.remove('is-invalid');
+    });
+}
+
+
+
+function previewImage(input, previewId) {
+    const preview = document.getElementById(previewId);
+    
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        
+        // Validate file size (2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            Swal.fire('Error!', 'File size must be less than 2MB', 'error');
+            input.value = '';
+            return;
+        }
+        
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            Swal.fire('Error!', 'Please select a valid image file', 'error');
+            input.value = '';
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.innerHTML = `
+                <img src="${e.target.result}" alt="Preview" class="img-fluid rounded" style="max-width: 150px;">
+                <div class="mt-2">
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removePreviewImage('${previewId}', '${input.name}')">
+                        <i class="bx bx-trash"></i> Remove
+                    </button>
+                </div>
+            `;
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function removePreviewImage(previewId, inputName) {
+    document.getElementById(previewId).innerHTML = `
+        <div class="border rounded p-3 text-muted">
+            <i class="bx bx-image fs-1 d-block mb-2"></i>
+            <small>No image selected</small>
+        </div>
+    `;
+    document.querySelector(`input[name="${inputName}"]`).value = '';
+}
+
+function removeLogo() {
+    const preview = document.getElementById('logoPreview');
+    const input = document.querySelector('input[name="logo"]');
+    
+    Swal.fire({
+        title: 'Remove Logo?',
+        text: 'Are you sure you want to remove the current logo?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, remove it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            preview.innerHTML = `
+                <div class="border rounded p-3 text-muted">
+                    <i class="bx bx-image fs-1 d-block mb-2"></i>
+                    <small>No logo uploaded</small>
+                </div>
+            `;
+            
+            // Add hidden input to mark for removal
+            if (!document.querySelector('input[name="removeLogo"]')) {
+                const removeInput = document.createElement('input');
+                removeInput.type = 'hidden';
+                removeInput.name = 'removeLogo';
+                removeInput.value = 'true';
+                document.getElementById('brandForm').appendChild(removeInput);
+            }
+        }
+    });
+}
+
+{% if brand %}
+function deleteBrand(brandId, brandName) {
+    Swal.fire({
+        title: 'Delete Brand?',
+        text: `Are you sure you want to delete "${brandName}"? This action cannot be undone.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#d33'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/brands/${brandId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Deleted!', data.message, 'success').then(() => {
+                        window.location.href = '/brands';
+                    });
+                } else {
+                    Swal.fire('Error!', data.message, 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('Error!', 'Something went wrong', 'error');
+            });
+        }
+    });
+}
+{% endif %}
+</script>
+{% endblock %}

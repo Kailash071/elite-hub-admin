@@ -1,0 +1,624 @@
+{% extends "layouts/admin.njk" %}
+
+{% block title %}Orders - {{ APP_NAME }}{% endblock %}
+
+{% set pageTitle = "Orders" %}
+{% set breadcrumbActive = "Orders" %}
+{% set currentPage = "orders" %}
+
+{% block content %}
+<!-- Statistics Cards -->
+<div class="row">
+  <div class="col-md-6 col-xl-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="card-title d-flex align-items-start justify-content-between">
+          <div class="avatar flex-shrink-0">
+            <img src="/assets/img/icons/unicons/chart-success.png" alt="chart success" class="rounded" />
+          </div>
+        </div>
+        <span class="fw-semibold d-block mb-1">Total Orders</span>
+        <h3 class="card-title mb-2">{{ stats.totalOrders or '12,486' }}</h3>
+        <small class="text-success fw-semibold"><i class="bx bx-up-arrow-alt"></i> {{ stats.ordersGrowth or '+22.5%' }}</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="card-title d-flex align-items-start justify-content-between">
+          <div class="avatar flex-shrink-0">
+            <img src="/assets/img/icons/unicons/wallet-info.png" alt="wallet info" class="rounded" />
+          </div>
+        </div>
+        <span class="fw-semibold d-block mb-1">Pending Orders</span>
+        <h3 class="card-title text-nowrap mb-1">{{ stats.pendingOrders or '328' }}</h3>
+        <small class="text-warning fw-semibold"><i class="bx bx-time"></i> Pending</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="card-title d-flex align-items-start justify-content-between">
+          <div class="avatar flex-shrink-0">
+            <img src="/assets/img/icons/unicons/cc-success.png" alt="Credit Card" class="rounded" />
+          </div>
+        </div>
+        <span class="d-block mb-1">Completed Orders</span>
+        <h3 class="card-title text-nowrap mb-2">{{ stats.completedOrders or '9,847' }}</h3>
+        <small class="text-success fw-semibold"><i class="bx bx-check-circle"></i> Delivered</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="card-title d-flex align-items-start justify-content-between">
+          <div class="avatar flex-shrink-0">
+            <img src="/assets/img/icons/unicons/paypal.png" alt="paypal" class="rounded" />
+          </div>
+        </div>
+        <span class="d-block mb-1">Total Revenue</span>
+        <h3 class="card-title text-nowrap mb-2">${{ stats.totalRevenue or '287,592' }}</h3>
+        <small class="text-info fw-semibold"><i class="bx bx-dollar"></i> Revenue</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Orders Table -->
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Orders Management</h5>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary btn-sm" onclick="refreshTable()">
+        <i class="bx bx-refresh"></i> Refresh
+      </button>
+      <button class="btn btn-outline-success btn-sm" onclick="exportData()">
+        <i class="bx bx-download"></i> Export
+      </button>
+      <a href="/orders/add" class="btn btn-primary btn-sm">
+        <i class="bx bx-plus"></i> Add Order
+      </a>
+    </div>
+  </div>
+  <div class="card-body">
+    <!-- Filters -->
+    <div class="row mb-3">
+      <div class="col-md-2">
+        <label class="form-label">Status</label>
+        <select class="form-select" id="filterStatus">
+          <option value="">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="processing">Processing</option>
+          <option value="shipped">Shipped</option>
+          <option value="delivered">Delivered</option>
+          <option value="cancelled">Cancelled</option>
+          <option value="returned">Returned</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Payment</label>
+        <select class="form-select" id="filterPayment">
+          <option value="">All Payments</option>
+          <option value="cod">Cash on Delivery</option>
+          <option value="prepaid">Prepaid</option>
+          <option value="card">Card</option>
+          <option value="upi">UPI</option>
+          <option value="netbanking">Net Banking</option>
+          <option value="wallet">Wallet</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Payment Status</label>
+        <select class="form-select" id="filterPaymentStatus">
+          <option value="">All</option>
+          <option value="pending">Pending</option>
+          <option value="completed">Completed</option>
+          <option value="failed">Failed</option>
+          <option value="refunded">Refunded</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Date Range</label>
+        <select class="form-select" id="filterDateRange">
+          <option value="">All Time</option>
+          <option value="today">Today</option>
+          <option value="week">This Week</option>
+          <option value="month">This Month</option>
+          <option value="year">This Year</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Search</label>
+        <input type="text" class="form-control" id="searchInput" placeholder="Order #, Customer, Email...">
+      </div>
+      <div class="col-md-1">
+        <label class="form-label">&nbsp;</label>
+        <div class="d-grid">
+          <button class="btn btn-outline-primary" onclick="applyFilters()">Filter</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DataTable -->
+    <div class="table-responsive">
+      <table class="table table-hover" id="ordersTable">
+        <thead>
+          <tr>
+            <th>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="selectAll">
+              </div>
+            </th>
+            <th>Order #</th>
+            <th>Customer</th>
+            <th>Products</th>
+            <th>Amount</th>
+            <th>Payment</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if orders and orders.length %}
+          {% for order in orders %}
+          <tr data-id="{{ order._id }}">
+            <td>
+              <div class="form-check">
+                <input class="form-check-input row-checkbox" type="checkbox" value="{{ order._id }}">
+              </div>
+            </td>
+            <td>
+              <div>
+                <strong>{{ order.orderNumber }}</strong>
+                {% if order.shipping.trackingNumber %}
+                <small class="d-block text-muted">Track: {{ order.shipping.trackingNumber }}</small>
+                {% endif %}
+              </div>
+            </td>
+            <td>
+              <div>
+                <h6 class="mb-0">{{ order.customer.firstName }} {{ order.customer.lastName if order.customer.lastName else '' }}</h6>
+                <small class="text-muted">{{ order.customerEmail }}</small>
+              </div>
+            </td>
+            <td>
+              <div>
+                <span class="badge bg-label-info">{{ order.totalItems or order.items.length }} Items</span>
+                {% if order.items and order.items.length %}
+                <small class="d-block text-muted">{{ order.items[0].productName }}{% if order.items.length > 1 %} +{{ order.items.length - 1 }} more{% endif %}</small>
+                {% endif %}
+              </div>
+            </td>
+            <td>
+              <div>
+                <strong>${{ order.totalAmount }}</strong>
+                <small class="d-block text-muted">
+                  {% if order.payment.method == 'cod' %}COD
+                  {% elif order.payment.method == 'prepaid' %}Prepaid
+                  {% else %}{{ order.payment.method | title }}
+                  {% endif %}
+                </small>
+              </div>
+            </td>
+            <td>
+              {% if order.payment.status == 'completed' %}
+                <span class="badge bg-label-success">Paid</span>
+              {% elif order.payment.status == 'pending' %}
+                <span class="badge bg-label-warning">Pending</span>
+              {% elif order.payment.status == 'failed' %}
+                <span class="badge bg-label-danger">Failed</span>
+              {% elif order.payment.status == 'refunded' %}
+                <span class="badge bg-label-info">Refunded</span>
+              {% else %}
+                <span class="badge bg-label-secondary">{{ order.payment.status | title }}</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if order.status == 'delivered' %}
+                <span class="badge bg-label-success">Delivered</span>
+              {% elif order.status == 'shipped' %}
+                <span class="badge bg-label-info">Shipped</span>
+              {% elif order.status == 'processing' %}
+                <span class="badge bg-label-primary">Processing</span>
+              {% elif order.status == 'confirmed' %}
+                <span class="badge bg-label-primary">Confirmed</span>
+              {% elif order.status == 'pending' %}
+                <span class="badge bg-label-warning">Pending</span>
+              {% elif order.status == 'cancelled' %}
+                <span class="badge bg-label-danger">Cancelled</span>
+              {% elif order.status == 'returned' %}
+                <span class="badge bg-label-secondary">Returned</span>
+              {% else %}
+                <span class="badge bg-label-secondary">{{ order.status | title }}</span>
+              {% endif %}
+            </td>
+            <td>
+              {{ order.orderDate | date('MMM DD, YYYY') }}
+              <small class="d-block text-muted">{{ order.orderDate | date('HH:mm') }}</small>
+            </td>
+            <td>
+              <div class="dropdown">
+                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                  <i class="bx bx-dots-vertical-rounded"></i>
+                </button>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" href="/orders/{{ order._id }}">
+                    <i class="bx bx-show me-1"></i> View Details
+                  </a>
+                  <a class="dropdown-item" href="/orders/{{ order._id }}/edit">
+                    <i class="bx bx-edit-alt me-1"></i> Edit Order
+                  </a>
+                  <a class="dropdown-item" href="/orders/{{ order._id }}/invoice">
+                    <i class="bx bx-receipt me-1"></i> View Invoice
+                  </a>
+                  {% if order.shipping.trackingNumber %}
+                  <a class="dropdown-item" href="/orders/{{ order._id }}/tracking">
+                    <i class="bx bx-map-pin me-1"></i> Track Order
+                  </a>
+                  {% endif %}
+                  <div class="dropdown-divider"></div>
+                  <div class="dropdown-header">Update Status</div>
+                  {% if order.status == 'pending' %}
+                  <a class="dropdown-item" href="javascript:void(0);" onclick="updateOrderStatus('{{ order._id }}', 'confirmed')">
+                    <i class="bx bx-check me-1"></i> Confirm Order
+                  </a>
+                  {% endif %}
+                  {% if order.status == 'confirmed' %}
+                  <a class="dropdown-item" href="javascript:void(0);" onclick="updateOrderStatus('{{ order._id }}', 'processing')">
+                    <i class="bx bx-loader me-1"></i> Mark Processing
+                  </a>
+                  {% endif %}
+                  {% if order.status == 'processing' %}
+                  <a class="dropdown-item" href="javascript:void(0);" onclick="updateOrderStatus('{{ order._id }}', 'shipped')">
+                    <i class="bx bx-package me-1"></i> Mark Shipped
+                  </a>
+                  {% endif %}
+                  {% if order.status == 'shipped' %}
+                  <a class="dropdown-item" href="javascript:void(0);" onclick="updateOrderStatus('{{ order._id }}', 'delivered')">
+                    <i class="bx bx-check-circle me-1"></i> Mark Delivered
+                  </a>
+                  {% endif %}
+                  {% if order.status not in ['cancelled', 'delivered', 'returned'] %}
+                  <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="updateOrderStatus('{{ order._id }}', 'cancelled')">
+                    <i class="bx bx-x me-1"></i> Cancel Order
+                  </a>
+                  {% endif %}
+                </div>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk Actions Modal -->
+<div class="modal fade" id="bulkActionModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Bulk Actions</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Select an action for <span id="selectedCount">0</span> selected orders:</p>
+        <div class="d-grid gap-2">
+          <button class="btn btn-outline-success" onclick="bulkAction('confirm')">
+            <i class="bx bx-check me-1"></i> Confirm Orders
+          </button>
+          <button class="btn btn-outline-primary" onclick="bulkAction('processing')">
+            <i class="bx bx-loader me-1"></i> Mark Processing
+          </button>
+          <button class="btn btn-outline-info" onclick="bulkAction('shipped')">
+            <i class="bx bx-package me-1"></i> Mark Shipped
+          </button>
+          <button class="btn btn-outline-success" onclick="bulkAction('delivered')">
+            <i class="bx bx-check-circle me-1"></i> Mark Delivered
+          </button>
+          <button class="btn btn-outline-danger" onclick="bulkAction('cancel')">
+            <i class="bx bx-x me-1"></i> Cancel Orders
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Update Status Modal -->
+<div class="modal fade" id="updateStatusModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Update Order Status</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">New Status</label>
+          <select class="form-select" id="newStatus">
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="processing">Processing</option>
+            <option value="shipped">Shipped</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+            <option value="returned">Returned</option>
+          </select>
+        </div>
+        
+        <div class="mb-3" id="trackingContainer" style="display: none;">
+          <label class="form-label">Tracking Number</label>
+          <input type="text" class="form-control" id="trackingNumber" placeholder="Enter tracking number">
+        </div>
+        
+        <div class="mb-3" id="carrierContainer" style="display: none;">
+          <label class="form-label">Carrier</label>
+          <select class="form-select" id="carrier">
+            <option value="">Select Carrier</option>
+            <option value="BlueDart">BlueDart</option>
+            <option value="DTDC">DTDC</option>
+            <option value="FedEx">FedEx</option>
+            <option value="DHL">DHL</option>
+            <option value="India Post">India Post</option>
+          </select>
+        </div>
+        
+        <div class="mb-3">
+          <label class="form-label">Notes (Optional)</label>
+          <textarea class="form-control" id="statusNotes" rows="3" placeholder="Add notes about this status update"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="confirmStatusUpdate()">Update Status</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+<script>
+let ordersTable;
+let updatingOrderId = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+  initializeDataTable();
+  initializeEventListeners();
+  initializeStatusModal();
+});
+
+function initializeDataTable() {
+  ordersTable = $('#ordersTable').DataTable({
+    processing: true,
+    serverSide: true,
+    ajax: {
+      url: '/orders/datatable',
+      type: 'POST',
+      data: function(d) {
+        d.status = $('#filterStatus').val();
+        d.payment = $('#filterPayment').val();
+        d.paymentStatus = $('#filterPaymentStatus').val();
+        d.dateRange = $('#filterDateRange').val();
+        d.search = $('#searchInput').val();
+      }
+    },
+    columns: [
+      { data: 'checkbox', orderable: false, searchable: false },
+      { data: 'orderNumber', name: 'orderNumber' },
+      { data: 'customer', name: 'customerEmail' },
+      { data: 'products', orderable: false },
+      { data: 'amount', name: 'totalAmount' },
+      { data: 'payment', name: 'payment.status' },
+      { data: 'status', name: 'status' },
+      { data: 'date', name: 'orderDate' },
+      { data: 'actions', orderable: false, searchable: false }
+    ],
+    order: [[7, 'desc']],
+    pageLength: 25,
+    responsive: true
+  });
+}
+
+function initializeEventListeners() {
+  // Select all functionality
+  $('#selectAll').on('change', function() {
+    $('.row-checkbox').prop('checked', $(this).prop('checked'));
+    updateBulkActionButton();
+  });
+
+  // Individual checkbox change
+  $(document).on('change', '.row-checkbox', function() {
+    updateBulkActionButton();
+  });
+}
+
+function initializeStatusModal() {
+  const statusSelect = document.getElementById('newStatus');
+  const trackingContainer = document.getElementById('trackingContainer');
+  const carrierContainer = document.getElementById('carrierContainer');
+  
+  statusSelect.addEventListener('change', function() {
+    if (this.value === 'shipped') {
+      trackingContainer.style.display = 'block';
+      carrierContainer.style.display = 'block';
+    } else {
+      trackingContainer.style.display = 'none';
+      carrierContainer.style.display = 'none';
+    }
+  });
+}
+
+function updateBulkActionButton() {
+  const selectedCount = $('.row-checkbox:checked').length;
+  $('#selectedCount').text(selectedCount);
+  
+  if (selectedCount > 0) {
+    if (!$('#bulkActionBtn').length) {
+      $('.card-header .d-flex').prepend(`
+        <button id="bulkActionBtn" class="btn btn-outline-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#bulkActionModal">
+          <i class="bx bx-check-square"></i> Actions (${selectedCount})
+        </button>
+      `);
+    } else {
+      $('#bulkActionBtn').html(`<i class="bx bx-check-square"></i> Actions (${selectedCount})`);
+    }
+  } else {
+    $('#bulkActionBtn').remove();
+  }
+}
+
+function applyFilters() {
+  ordersTable.ajax.reload();
+}
+
+function refreshTable() {
+  ordersTable.ajax.reload();
+}
+
+function exportData() {
+  const filters = {
+    status: $('#filterStatus').val(),
+    payment: $('#filterPayment').val(),
+    paymentStatus: $('#filterPaymentStatus').val(),
+    dateRange: $('#filterDateRange').val(),
+    search: $('#searchInput').val()
+  };
+  
+  window.open('/orders/export?' + new URLSearchParams(filters));
+}
+
+function updateOrderStatus(orderId, newStatus) {
+  updatingOrderId = orderId;
+  document.getElementById('newStatus').value = newStatus;
+  
+  // Trigger change event to show/hide tracking fields
+  document.getElementById('newStatus').dispatchEvent(new Event('change'));
+  
+  // Clear previous values
+  document.getElementById('trackingNumber').value = '';
+  document.getElementById('carrier').value = '';
+  document.getElementById('statusNotes').value = '';
+  
+  $('#updateStatusModal').modal('show');
+}
+
+function confirmStatusUpdate() {
+  const newStatus = document.getElementById('newStatus').value;
+  const trackingNumber = document.getElementById('trackingNumber').value;
+  const carrier = document.getElementById('carrier').value;
+  const notes = document.getElementById('statusNotes').value;
+  
+  const updateData = {
+    status: newStatus,
+    notes: notes
+  };
+  
+  if (newStatus === 'shipped') {
+    if (!trackingNumber) {
+      Swal.fire('Error!', 'Tracking number is required for shipped orders', 'error');
+      return;
+    }
+    updateData.trackingNumber = trackingNumber;
+    updateData.carrier = carrier;
+  }
+  
+  fetch(`/orders/${updatingOrderId}/status`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: JSON.stringify(updateData)
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      Swal.fire('Success!', data.message, 'success');
+      ordersTable.ajax.reload();
+      $('#updateStatusModal').modal('hide');
+    } else {
+      Swal.fire('Error!', data.message, 'error');
+    }
+  })
+  .catch(error => {
+    Swal.fire('Error!', 'Something went wrong', 'error');
+  });
+}
+
+function bulkAction(action) {
+  const selectedIds = $('.row-checkbox:checked').map(function() {
+    return $(this).val();
+  }).get();
+
+  if (selectedIds.length === 0) {
+    Swal.fire('Warning!', 'Please select at least one order', 'warning');
+    return;
+  }
+
+  const actionText = {
+    confirm: 'confirm',
+    processing: 'mark as processing',
+    shipped: 'mark as shipped',
+    delivered: 'mark as delivered',
+    cancel: 'cancel'
+  };
+
+  const statusMap = {
+    confirm: 'confirmed',
+    processing: 'processing',
+    shipped: 'shipped',
+    delivered: 'delivered',
+    cancel: 'cancelled'
+  };
+
+  Swal.fire({
+    title: `${actionText[action].charAt(0).toUpperCase() + actionText[action].slice(1)} Orders?`,
+    text: `Are you sure you want to ${actionText[action]} ${selectedIds.length} selected orders?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: `Yes, ${action}!`,
+    cancelButtonText: 'Cancel'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch('/orders/bulk-status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+          status: statusMap[action],
+          orderIds: selectedIds
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          Swal.fire('Success!', data.message, 'success');
+          ordersTable.ajax.reload();
+          $('#bulkActionModal').modal('hide');
+          $('.row-checkbox').prop('checked', false);
+          $('#selectAll').prop('checked', false);
+          updateBulkActionButton();
+        } else {
+          Swal.fire('Error!', data.message, 'error');
+        }
+      })
+      .catch(error => {
+        Swal.fire('Error!', 'Something went wrong', 'error');
+      });
+    }
+  });
+}
+</script>
+{% endblock %}

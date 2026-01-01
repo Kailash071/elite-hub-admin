@@ -1,0 +1,623 @@
+{% extends "layouts/admin.njk" %}
+
+{% block title %}Customers - {{ APP_NAME }}{% endblock %}
+
+{% set pageTitle = "Customers" %}
+{% set breadcrumbActive = "Customers" %}
+{% set currentPage = "customers" %}
+
+{% block content %}
+<!-- Statistics Cards -->
+<div class="row">
+  <div class="col-md-6 col-xl-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="card-title d-flex align-items-start justify-content-between">
+          <div class="avatar flex-shrink-0">
+            <img src="/assets/img/icons/unicons/chart-success.png" alt="chart success" class="rounded" />
+          </div>
+        </div>
+        <span class="fw-semibold d-block mb-1">Total Customers</span>
+        <h3 class="card-title mb-2">{{ stats.totalCustomers or '8,549' }}</h3>
+        <small class="text-success fw-semibold"><i class="bx bx-up-arrow-alt"></i> {{ stats.customersGrowth or '+18.4%' }}</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="card-title d-flex align-items-start justify-content-between">
+          <div class="avatar flex-shrink-0">
+            <img src="/assets/img/icons/unicons/wallet-info.png" alt="wallet info" class="rounded" />
+          </div>
+        </div>
+        <span class="fw-semibold d-block mb-1">Active Customers</span>
+        <h3 class="card-title text-nowrap mb-1">{{ stats.activeCustomers or '7,892' }}</h3>
+        <small class="text-success fw-semibold"><i class="bx bx-check-circle"></i> Active</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="card-title d-flex align-items-start justify-content-between">
+          <div class="avatar flex-shrink-0">
+            <img src="/assets/img/icons/unicons/cc-primary.png" alt="Credit Card" class="rounded" />
+          </div>
+        </div>
+        <span class="d-block mb-1">Verified Customers</span>
+        <h3 class="card-title text-nowrap mb-2">{{ stats.verifiedCustomers or '6,234' }}</h3>
+        <small class="text-info fw-semibold"><i class="bx bx-shield-check"></i> Verified</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="card-title d-flex align-items-start justify-content-between">
+          <div class="avatar flex-shrink-0">
+            <img src="/assets/img/icons/unicons/paypal.png" alt="paypal" class="rounded" />
+          </div>
+        </div>
+        <span class="d-block mb-1">VIP Customers</span>
+        <h3 class="card-title text-nowrap mb-2">{{ stats.vipCustomers or '342' }}</h3>
+        <small class="text-warning fw-semibold"><i class="bx bx-crown"></i> VIP</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Customers Table -->
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Customers Management</h5>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary btn-sm" onclick="refreshTable()">
+        <i class="bx bx-refresh"></i> Refresh
+      </button>
+      <button class="btn btn-outline-success btn-sm" onclick="exportData()">
+        <i class="bx bx-download"></i> Export
+      </button>
+      <a href="/customers/add" class="btn btn-primary btn-sm">
+        <i class="bx bx-plus"></i> Add Customer
+      </a>
+    </div>
+  </div>
+  <div class="card-body">
+    <!-- Filters -->
+    <div class="row mb-3">
+      <div class="col-md-2">
+        <label class="form-label">Status</label>
+        <select class="form-select" id="filterStatus">
+          <option value="">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+          <option value="blocked">Blocked</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Verification</label>
+        <select class="form-select" id="filterVerification">
+          <option value="">All</option>
+          <option value="verified">Verified</option>
+          <option value="unverified">Unverified</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Membership</label>
+        <select class="form-select" id="filterMembership">
+          <option value="">All Tiers</option>
+          <option value="bronze">Bronze</option>
+          <option value="silver">Silver</option>
+          <option value="gold">Gold</option>
+          <option value="platinum">Platinum</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Registration</label>
+        <select class="form-select" id="filterRegistration">
+          <option value="">All Time</option>
+          <option value="today">Today</option>
+          <option value="week">This Week</option>
+          <option value="month">This Month</option>
+          <option value="year">This Year</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Search</label>
+        <input type="text" class="form-control" id="searchInput" placeholder="Search customers...">
+      </div>
+      <div class="col-md-1">
+        <label class="form-label">&nbsp;</label>
+        <div class="d-grid">
+          <button class="btn btn-outline-primary" onclick="applyFilters()">Filter</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DataTable -->
+    <div class="table-responsive">
+      <table class="table table-hover" id="customersTable">
+        <thead>
+          <tr>
+            <th>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="selectAll">
+              </div>
+            </th>
+            <th>Customer</th>
+            <th>Contact</th>
+            <th>Orders</th>
+            <th>Total Spent</th>
+            <th>Membership</th>
+            <th>Status</th>
+            <th>Joined</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if customers and customers.length %}
+          {% for customer in customers %}
+          <tr data-id="{{ customer._id }}">
+            <td>
+              <div class="form-check">
+                <input class="form-check-input row-checkbox" type="checkbox" value="{{ customer._id }}">
+              </div>
+            </td>
+            <td>
+              <div class="d-flex align-items-center">
+                <div class="avatar avatar-sm me-3">
+                  <span class="avatar-initial rounded bg-label-primary">{{ customer.firstName.charAt(0).toUpperCase() }}{{ customer.lastName.charAt(0).toUpperCase() }}</span>
+                </div>
+                <div>
+                  <h6 class="mb-0">{{ customer.firstName }} {{ customer.lastName }}</h6>
+                  <small class="text-muted d-flex align-items-center">
+                    {{ customer.email }}
+                    {% if customer.emailVerified %}
+                      <i class="bx bx-badge-check text-success ms-1" title="Email Verified"></i>
+                    {% endif %}
+                  </small>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div>
+                {% if customer.phone %}
+                <small class="d-block">{{ customer.phone }}</small>
+                {% endif %}
+                {% if customer.phoneVerified %}
+                  <span class="badge bg-label-success">Phone Verified</span>
+                {% endif %}
+              </div>
+            </td>
+            <td>
+              <span class="badge bg-label-info">{{ customer.totalOrders or 0 }} Orders</span>
+            </td>
+            <td>
+              <strong>${{ customer.totalSpent or '0.00' }}</strong>
+              {% if customer.averageOrderValue %}
+              <small class="d-block text-muted">Avg: ${{ customer.averageOrderValue }}</small>
+              {% endif %}
+            </td>
+            <td>
+              {% if customer.membershipTier == 'platinum' %}
+                <span class="badge bg-label-warning">Platinum</span>
+              {% elif customer.membershipTier == 'gold' %}
+                <span class="badge bg-label-warning">Gold</span>
+              {% elif customer.membershipTier == 'silver' %}
+                <span class="badge bg-label-info">Silver</span>
+              {% else %}
+                <span class="badge bg-label-secondary">Bronze</span>
+              {% endif %}
+              {% if customer.loyaltyPoints %}
+              <small class="d-block text-muted">{{ customer.loyaltyPoints }} pts</small>
+              {% endif %}
+            </td>
+            <td>
+              {% if customer.isBlocked %}
+                <span class="badge bg-label-danger">Blocked</span>
+              {% elif customer.isActive %}
+                <span class="badge bg-label-success">Active</span>
+              {% else %}
+                <span class="badge bg-label-secondary">Inactive</span>
+              {% endif %}
+            </td>
+            <td>
+              {{ customer.createdAt | date('MMM DD, YYYY') }}
+              {% if customer.lastLoginAt %}
+              <small class="d-block text-muted">Last: {{ customer.lastLoginAt | date('MMM DD') }}</small>
+              {% endif %}
+            </td>
+            <td>
+              <div class="dropdown">
+                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                  <i class="bx bx-dots-vertical-rounded"></i>
+                </button>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" href="/customers/{{ customer._id }}">
+                    <i class="bx bx-show me-1"></i> View Details
+                  </a>
+                  <a class="dropdown-item" href="/customers/{{ customer._id }}/edit">
+                    <i class="bx bx-edit-alt me-1"></i> Edit
+                  </a>
+                  <a class="dropdown-item" href="/customers/{{ customer._id }}/orders">
+                    <i class="bx bx-receipt me-1"></i> View Orders
+                  </a>
+                  <a class="dropdown-item" href="/customers/{{ customer._id }}/addresses">
+                    <i class="bx bx-map me-1"></i> Manage Addresses
+                  </a>
+                  <div class="dropdown-divider"></div>
+                  {% if customer.isBlocked %}
+                  <a class="dropdown-item" href="javascript:void(0);" onclick="toggleBlock('{{ customer._id }}', false)">
+                    <i class="bx bx-check me-1"></i> Unblock
+                  </a>
+                  {% else %}
+                  <a class="dropdown-item" href="javascript:void(0);" onclick="toggleBlock('{{ customer._id }}', true)">
+                    <i class="bx bx-block me-1"></i> Block Customer
+                  </a>
+                  {% endif %}
+                  {% if customer.isActive %}
+                  <a class="dropdown-item" href="javascript:void(0);" onclick="toggleStatus('{{ customer._id }}', false)">
+                    <i class="bx bx-hide me-1"></i> Deactivate
+                  </a>
+                  {% else %}
+                  <a class="dropdown-item" href="javascript:void(0);" onclick="toggleStatus('{{ customer._id }}', true)">
+                    <i class="bx bx-show me-1"></i> Activate
+                  </a>
+                  {% endif %}
+                  <div class="dropdown-divider"></div>
+                  <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteCustomer('{{ customer._id }}', '{{ customer.firstName }} {{ customer.lastName }}')">
+                    <i class="bx bx-trash me-1"></i> Delete
+                  </a>
+                </div>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk Actions Modal -->
+<div class="modal fade" id="bulkActionModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Bulk Actions</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Select an action for <span id="selectedCount">0</span> selected customers:</p>
+        <div class="d-grid gap-2">
+          <button class="btn btn-outline-success" onclick="bulkAction('activate')">
+            <i class="bx bx-check-circle me-1"></i> Activate Selected
+          </button>
+          <button class="btn btn-outline-secondary" onclick="bulkAction('deactivate')">
+            <i class="bx bx-hide me-1"></i> Deactivate Selected
+          </button>
+          <button class="btn btn-outline-warning" onclick="bulkAction('block')">
+            <i class="bx bx-block me-1"></i> Block Selected
+          </button>
+          <button class="btn btn-outline-info" onclick="bulkAction('unblock')">
+            <i class="bx bx-check me-1"></i> Unblock Selected
+          </button>
+          <button class="btn btn-outline-danger" onclick="bulkAction('delete')">
+            <i class="bx bx-trash me-1"></i> Delete Selected
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Block Customer Modal -->
+<div class="modal fade" id="blockCustomerModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Block Customer</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Reason for blocking</label>
+          <textarea class="form-control" id="blockReason" rows="3" placeholder="Enter reason for blocking this customer"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" onclick="confirmBlock()">Block Customer</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+<script>
+let customersTable;
+let blockingCustomerId = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+  initializeDataTable();
+  initializeEventListeners();
+});
+
+function initializeDataTable() {
+  customersTable = $('#customersTable').DataTable({
+    processing: true,
+    serverSide: true,
+    ajax: {
+      url: '/customers/datatable',
+      type: 'POST',
+      data: function(d) {
+        d.status = $('#filterStatus').val();
+        d.verification = $('#filterVerification').val();
+        d.membership = $('#filterMembership').val();
+        d.registration = $('#filterRegistration').val();
+        d.search = $('#searchInput').val();
+      }
+    },
+    columns: [
+      { data: 'checkbox', orderable: false, searchable: false },
+      { data: 'customer', name: 'firstName' },
+      { data: 'contact', name: 'email' },
+      { data: 'orders', name: 'totalOrders' },
+      { data: 'totalSpent', name: 'totalSpent' },
+      { data: 'membership', name: 'membershipTier' },
+      { data: 'status', name: 'isActive' },
+      { data: 'joinDate', name: 'createdAt' },
+      { data: 'actions', orderable: false, searchable: false }
+    ],
+    order: [[7, 'desc']],
+    pageLength: 25,
+    responsive: true
+  });
+}
+
+function initializeEventListeners() {
+  // Select all functionality
+  $('#selectAll').on('change', function() {
+    $('.row-checkbox').prop('checked', $(this).prop('checked'));
+    updateBulkActionButton();
+  });
+
+  // Individual checkbox change
+  $(document).on('change', '.row-checkbox', function() {
+    updateBulkActionButton();
+  });
+}
+
+function updateBulkActionButton() {
+  const selectedCount = $('.row-checkbox:checked').length;
+  $('#selectedCount').text(selectedCount);
+  
+  if (selectedCount > 0) {
+    if (!$('#bulkActionBtn').length) {
+      $('.card-header .d-flex').prepend(`
+        <button id="bulkActionBtn" class="btn btn-outline-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#bulkActionModal">
+          <i class="bx bx-check-square"></i> Actions (${selectedCount})
+        </button>
+      `);
+    } else {
+      $('#bulkActionBtn').html(`<i class="bx bx-check-square"></i> Actions (${selectedCount})`);
+    }
+  } else {
+    $('#bulkActionBtn').remove();
+  }
+}
+
+function applyFilters() {
+  customersTable.ajax.reload();
+}
+
+function refreshTable() {
+  customersTable.ajax.reload();
+}
+
+function exportData() {
+  const filters = {
+    status: $('#filterStatus').val(),
+    verification: $('#filterVerification').val(),
+    membership: $('#filterMembership').val(),
+    registration: $('#filterRegistration').val(),
+    search: $('#searchInput').val()
+  };
+  
+  window.open('/customers/export?' + new URLSearchParams(filters));
+}
+
+function toggleStatus(customerId, newStatus) {
+  const action = newStatus ? 'activate' : 'deactivate';
+  
+  Swal.fire({
+    title: `${action.charAt(0).toUpperCase() + action.slice(1)} Customer?`,
+    text: `Are you sure you want to ${action} this customer?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: `Yes, ${action}!`,
+    cancelButtonText: 'Cancel'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch(`/customers/${customerId}/toggle-status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ isActive: newStatus })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          Swal.fire('Success!', data.message, 'success');
+          customersTable.ajax.reload();
+        } else {
+          Swal.fire('Error!', data.message, 'error');
+        }
+      })
+      .catch(error => {
+        Swal.fire('Error!', 'Something went wrong', 'error');
+      });
+    }
+  });
+}
+
+function toggleBlock(customerId, block) {
+  if (block) {
+    blockingCustomerId = customerId;
+    $('#blockReason').val('');
+    $('#blockCustomerModal').modal('show');
+  } else {
+    // Unblock customer
+    Swal.fire({
+      title: 'Unblock Customer?',
+      text: 'Are you sure you want to unblock this customer?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, unblock!',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        performBlock(customerId, false, '');
+      }
+    });
+  }
+}
+
+function confirmBlock() {
+  const reason = $('#blockReason').val().trim();
+  
+  if (!reason) {
+    Swal.fire('Error!', 'Please provide a reason for blocking', 'error');
+    return;
+  }
+  
+  $('#blockCustomerModal').modal('hide');
+  performBlock(blockingCustomerId, true, reason);
+}
+
+function performBlock(customerId, block, reason) {
+  fetch(`/customers/${customerId}/toggle-block`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: JSON.stringify({ 
+      isBlocked: block,
+      blockReason: reason 
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      Swal.fire('Success!', data.message, 'success');
+      customersTable.ajax.reload();
+    } else {
+      Swal.fire('Error!', data.message, 'error');
+    }
+  })
+  .catch(error => {
+    Swal.fire('Error!', 'Something went wrong', 'error');
+  });
+}
+
+function deleteCustomer(customerId, customerName) {
+  Swal.fire({
+    title: 'Delete Customer?',
+    text: `Are you sure you want to delete "${customerName}"? This will permanently remove all customer data including orders and addresses.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, delete it!',
+    cancelButtonText: 'Cancel',
+    confirmButtonColor: '#d33'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch(`/customers/${customerId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          Swal.fire('Deleted!', data.message, 'success');
+          customersTable.ajax.reload();
+        } else {
+          Swal.fire('Error!', data.message, 'error');
+        }
+      })
+      .catch(error => {
+        Swal.fire('Error!', 'Something went wrong', 'error');
+      });
+    }
+  });
+}
+
+function bulkAction(action) {
+  const selectedIds = $('.row-checkbox:checked').map(function() {
+    return $(this).val();
+  }).get();
+
+  if (selectedIds.length === 0) {
+    Swal.fire('Warning!', 'Please select at least one customer', 'warning');
+    return;
+  }
+
+  const actionText = {
+    activate: 'activate',
+    deactivate: 'deactivate', 
+    block: 'block',
+    unblock: 'unblock',
+    delete: 'delete'
+  };
+
+  Swal.fire({
+    title: `${actionText[action].charAt(0).toUpperCase() + actionText[action].slice(1)} Customers?`,
+    text: `Are you sure you want to ${actionText[action]} ${selectedIds.length} selected customers?`,
+    icon: action === 'delete' ? 'warning' : 'question',
+    showCancelButton: true,
+    confirmButtonText: `Yes, ${action}!`,
+    cancelButtonText: 'Cancel',
+    confirmButtonColor: action === 'delete' ? '#d33' : '#696cff'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch('/customers/bulk-action', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+          action: action,
+          customerIds: selectedIds
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          Swal.fire('Success!', data.message, 'success');
+          customersTable.ajax.reload();
+          $('#bulkActionModal').modal('hide');
+          $('.row-checkbox').prop('checked', false);
+          $('#selectAll').prop('checked', false);
+          updateBulkActionButton();
+        } else {
+          Swal.fire('Error!', data.message, 'error');
+        }
+      })
+      .catch(error => {
+        Swal.fire('Error!', 'Something went wrong', 'error');
+      });
+    }
+  });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,545 @@
+{% extends "layouts/admin.njk" %}
+
+{% block title %}Order {{ order.orderNumber }} - Order Details - {{ APP_NAME }}{% endblock %}
+
+{% set pageTitle = "Order " + order.orderNumber %}
+{% set breadcrumbSection = "Orders" %}
+{% set breadcrumbSectionUrl = "/orders" %}
+{% set breadcrumbActive = "Order Details" %}
+{% set currentPage = "orders" %}
+
+{% block content %}
+<div class="row">
+    <!-- Order Details -->
+    <div class="col-lg-8">
+        <!-- Order Status and Actions -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-1">Order {{ order.orderNumber }}</h5>
+                    <small class="text-muted">Placed on {{ order.orderDate | date('MMM DD, YYYY HH:mm') }}</small>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary btn-sm" onclick="printInvoice()">
+                        <i class="bx bx-printer"></i> Print Invoice
+                    </button>
+                    <button class="btn btn-outline-info btn-sm" onclick="sendOrderUpdate()">
+                        <i class="bx bx-mail-send"></i> Send Update
+                    </button>
+                    <a href="/orders/{{ order._id }}/edit" class="btn btn-primary btn-sm">
+                        <i class="bx bx-edit-alt"></i> Edit Order
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6>Order Status</h6>
+                        {% if order.status == 'delivered' %}
+                            <span class="badge bg-success fs-6">Delivered</span>
+                        {% elif order.status == 'shipped' %}
+                            <span class="badge bg-info fs-6">Shipped</span>
+                        {% elif order.status == 'processing' %}
+                            <span class="badge bg-primary fs-6">Processing</span>
+                        {% elif order.status == 'confirmed' %}
+                            <span class="badge bg-primary fs-6">Confirmed</span>
+                        {% elif order.status == 'pending' %}
+                            <span class="badge bg-warning fs-6">Pending</span>
+                        {% elif order.status == 'cancelled' %}
+                            <span class="badge bg-danger fs-6">Cancelled</span>
+                        {% elif order.status == 'returned' %}
+                            <span class="badge bg-secondary fs-6">Returned</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Payment Status</h6>
+                        {% if order.payment.status == 'completed' %}
+                            <span class="badge bg-success fs-6">Paid</span>
+                        {% elif order.payment.status == 'pending' %}
+                            <span class="badge bg-warning fs-6">Pending</span>
+                        {% elif order.payment.status == 'failed' %}
+                            <span class="badge bg-danger fs-6">Failed</span>
+                        {% elif order.payment.status == 'refunded' %}
+                            <span class="badge bg-info fs-6">Refunded</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Total Amount</h6>
+                        <span class="fs-5 fw-bold text-primary">${{ order.totalAmount }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Items -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Order Items</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>SKU</th>
+                                <th>Quantity</th>
+                                <th>Unit Price</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order.items %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if item.productImage %}
+                                        <div class="avatar avatar-sm me-3">
+                                            <img src="{{ item.productImage }}" alt="{{ item.productName }}" class="rounded">
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <h6 class="mb-0">{{ item.productName }}</h6>
+                                            {% if item.variantName %}
+                                            <small class="text-muted">{{ item.variantName }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ item.productSku or '-' }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>${{ item.unitPrice }}</td>
+                                <td>${{ item.totalPrice }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="4" class="text-end"><strong>Subtotal:</strong></td>
+                                <td><strong>${{ order.subtotal }}</strong></td>
+                            </tr>
+                            {% if order.discountAmount > 0 %}
+                            <tr>
+                                <td colspan="4" class="text-end">Discount:</td>
+                                <td class="text-success">-${{ order.discountAmount }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <td colspan="4" class="text-end">Shipping:</td>
+                                <td>${{ order.shippingCost }}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-end">Tax:</td>
+                                <td>${{ order.taxAmount }}</td>
+                            </tr>
+                            <tr class="table-primary">
+                                <td colspan="4" class="text-end"><strong>Total:</strong></td>
+                                <td><strong>${{ order.totalAmount }}</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shipping & Billing Addresses -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0">Shipping Address</h6>
+                    </div>
+                    <div class="card-body">
+                        <div>{{ order.shippingAddress.firstName }} {{ order.shippingAddress.lastName }}</div>
+                        {% if order.shippingAddress.company %}
+                        <div>{{ order.shippingAddress.company }}</div>
+                        {% endif %}
+                        <div>{{ order.shippingAddress.addressLine1 }}</div>
+                        {% if order.shippingAddress.addressLine2 %}
+                        <div>{{ order.shippingAddress.addressLine2 }}</div>
+                        {% endif %}
+                        <div>{{ order.shippingAddress.city }}, {{ order.shippingAddress.state }} {{ order.shippingAddress.postalCode }}</div>
+                        <div>{{ order.shippingAddress.country }}</div>
+                        {% if order.shippingAddress.phone %}
+                        <div class="mt-2 text-muted">{{ order.shippingAddress.phone }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0">Billing Address</h6>
+                    </div>
+                    <div class="card-body">
+                        <div>{{ order.billingAddress.firstName }} {{ order.billingAddress.lastName }}</div>
+                        {% if order.billingAddress.company %}
+                        <div>{{ order.billingAddress.company }}</div>
+                        {% endif %}
+                        <div>{{ order.billingAddress.addressLine1 }}</div>
+                        {% if order.billingAddress.addressLine2 %}
+                        <div>{{ order.billingAddress.addressLine2 }}</div>
+                        {% endif %}
+                        <div>{{ order.billingAddress.city }}, {{ order.billingAddress.state }} {{ order.billingAddress.postalCode }}</div>
+                        <div>{{ order.billingAddress.country }}</div>
+                        {% if order.billingAddress.phone %}
+                        <div class="mt-2 text-muted">{{ order.billingAddress.phone }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Notes -->
+        {% if order.customerNotes or order.adminNotes %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Notes</h5>
+            </div>
+            <div class="card-body">
+                {% if order.customerNotes %}
+                <div class="mb-3">
+                    <h6>Customer Notes:</h6>
+                    <p class="mb-0">{{ order.customerNotes }}</p>
+                </div>
+                {% endif %}
+                {% if order.adminNotes %}
+                <div>
+                    <h6>Admin Notes:</h6>
+                    <p class="mb-0">{{ order.adminNotes }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Customer Information -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Customer</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="avatar avatar-sm me-3">
+                        <span class="avatar-initial rounded bg-label-primary">
+                            {{ order.customer.firstName.charAt(0) }}{{ order.customer.lastName.charAt(0) }}
+                        </span>
+                    </div>
+                    <div>
+                        <h6 class="mb-0">{{ order.customer.firstName }} {{ order.customer.lastName }}</h6>
+                        <small class="text-muted">{{ order.customerEmail }}</small>
+                    </div>
+                </div>
+                {% if order.customerPhone %}
+                <div class="mb-2">
+                    <strong>Phone:</strong> {{ order.customerPhone }}
+                </div>
+                {% endif %}
+                <div>
+                    <a href="/customers/{{ order.customer._id }}" class="btn btn-sm btn-outline-primary">
+                        <i class="bx bx-user"></i> View Customer
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Information -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Payment</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <strong>Method:</strong> 
+                    {% if order.payment.method == 'cod' %}Cash on Delivery
+                    {% elif order.payment.method == 'card' %}Credit/Debit Card
+                    {% elif order.payment.method == 'upi' %}UPI
+                    {% elif order.payment.method == 'netbanking' %}Net Banking
+                    {% elif order.payment.method == 'wallet' %}Wallet
+                    {% else %}{{ order.payment.method | title }}
+                    {% endif %}
+                </div>
+                {% if order.payment.transactionId %}
+                <div class="mb-2">
+                    <strong>Transaction ID:</strong> {{ order.payment.transactionId }}
+                </div>
+                {% endif %}
+                {% if order.payment.paymentGateway %}
+                <div class="mb-2">
+                    <strong>Gateway:</strong> {{ order.payment.paymentGateway }}
+                </div>
+                {% endif %}
+                {% if order.payment.paidAt %}
+                <div class="mb-2">
+                    <strong>Paid At:</strong> {{ order.payment.paidAt | date('MMM DD, YYYY HH:mm') }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Shipping Information -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Shipping</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <strong>Method:</strong> {{ order.shipping.method | title }}
+                </div>
+                {% if order.shipping.carrier %}
+                <div class="mb-2">
+                    <strong>Carrier:</strong> {{ order.shipping.carrier }}
+                </div>
+                {% endif %}
+                {% if order.shipping.trackingNumber %}
+                <div class="mb-2">
+                    <strong>Tracking:</strong> 
+                    <a href="#" onclick="trackOrder()" class="text-primary">{{ order.shipping.trackingNumber }}</a>
+                </div>
+                {% endif %}
+                <div class="mb-2">
+                    <strong>Cost:</strong> ${{ order.shippingCost }}
+                </div>
+                {% if order.shipping.estimatedDelivery %}
+                <div class="mb-2">
+                    <strong>Est. Delivery:</strong> {{ order.shipping.estimatedDelivery | date('MMM DD, YYYY') }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Order Timeline -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Order Timeline</h5>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-point timeline-point-success"></div>
+                        <div class="timeline-event">
+                            <div class="timeline-header">
+                                <h6 class="timeline-title">Order Placed</h6>
+                                <small class="text-muted">{{ order.orderDate | date('MMM DD, YYYY HH:mm') }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if order.confirmedAt %}
+                    <div class="timeline-item">
+                        <div class="timeline-point timeline-point-primary"></div>
+                        <div class="timeline-event">
+                            <div class="timeline-header">
+                                <h6 class="timeline-title">Order Confirmed</h6>
+                                <small class="text-muted">{{ order.confirmedAt | date('MMM DD, YYYY HH:mm') }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if order.shippedAt %}
+                    <div class="timeline-item">
+                        <div class="timeline-point timeline-point-info"></div>
+                        <div class="timeline-event">
+                            <div class="timeline-header">
+                                <h6 class="timeline-title">Order Shipped</h6>
+                                <small class="text-muted">{{ order.shippedAt | date('MMM DD, YYYY HH:mm') }}</small>
+                            </div>
+                            {% if order.shipping.trackingNumber %}
+                            <p class="timeline-body">Tracking: {{ order.shipping.trackingNumber }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if order.deliveredAt %}
+                    <div class="timeline-item">
+                        <div class="timeline-point timeline-point-success"></div>
+                        <div class="timeline-event">
+                            <div class="timeline-header">
+                                <h6 class="timeline-title">Order Delivered</h6>
+                                <small class="text-muted">{{ order.deliveredAt | date('MMM DD, YYYY HH:mm') }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if order.cancelledAt %}
+                    <div class="timeline-item">
+                        <div class="timeline-point timeline-point-danger"></div>
+                        <div class="timeline-event">
+                            <div class="timeline-header">
+                                <h6 class="timeline-title">Order Cancelled</h6>
+                                <small class="text-muted">{{ order.cancelledAt | date('MMM DD, YYYY HH:mm') }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    {% if order.status == 'pending' %}
+                    <button class="btn btn-success" onclick="updateStatus('confirmed')">
+                        <i class="bx bx-check"></i> Confirm Order
+                    </button>
+                    {% elif order.status == 'confirmed' %}
+                    <button class="btn btn-primary" onclick="updateStatus('processing')">
+                        <i class="bx bx-loader"></i> Start Processing
+                    </button>
+                    {% elif order.status == 'processing' %}
+                    <button class="btn btn-info" onclick="updateStatus('shipped')">
+                        <i class="bx bx-package"></i> Mark as Shipped
+                    </button>
+                    {% elif order.status == 'shipped' %}
+                    <button class="btn btn-success" onclick="updateStatus('delivered')">
+                        <i class="bx bx-check-circle"></i> Mark as Delivered
+                    </button>
+                    {% endif %}
+                    
+                    {% if order.status not in ['cancelled', 'delivered', 'returned'] %}
+                    <button class="btn btn-outline-danger" onclick="updateStatus('cancelled')">
+                        <i class="bx bx-x"></i> Cancel Order
+                    </button>
+                    {% endif %}
+                    
+                    <a href="/orders" class="btn btn-outline-secondary">
+                        <i class="bx bx-arrow-back"></i> Back to Orders
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+function updateStatus(newStatus) {
+    let title = `Update to ${newStatus.charAt(0).toUpperCase() + newStatus.slice(1)}?`;
+    let showTracking = newStatus === 'shipped';
+    
+    let inputHtml = '';
+    if (showTracking) {
+        inputHtml = `
+            <div class="mb-3">
+                <label class="form-label">Tracking Number</label>
+                <input type="text" id="trackingNumber" class="form-control" placeholder="Enter tracking number">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Carrier</label>
+                <select id="carrier" class="form-control">
+                    <option value="">Select Carrier</option>
+                    <option value="FedEx">FedEx</option>
+                    <option value="UPS">UPS</option>
+                    <option value="DHL">DHL</option>
+                    <option value="BlueDart">BlueDart</option>
+                </select>
+            </div>
+        `;
+    }
+    
+    inputHtml += `
+        <div class="mb-3">
+            <label class="form-label">Notes (Optional)</label>
+            <textarea id="statusNotes" class="form-control" rows="3" placeholder="Add notes about this status update"></textarea>
+        </div>
+    `;
+    
+    Swal.fire({
+        title: title,
+        html: inputHtml,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Update Status',
+        preConfirm: () => {
+            const data = {
+                status: newStatus,
+                notes: document.getElementById('statusNotes').value
+            };
+            
+            if (showTracking) {
+                const trackingNumber = document.getElementById('trackingNumber').value;
+                if (!trackingNumber) {
+                    Swal.showValidationMessage('Tracking number is required for shipped orders');
+                    return false;
+                }
+                data.trackingNumber = trackingNumber;
+                data.carrier = document.getElementById('carrier').value;
+            }
+            
+            return data;
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/orders/{{ order._id }}/status`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(result.value)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Updated!', data.message, 'success').then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire('Error!', data.message, 'error');
+                }
+            });
+        }
+    });
+}
+
+function printInvoice() {
+    window.open(`/orders/{{ order._id }}/invoice/print`, '_blank');
+}
+
+function sendOrderUpdate() {
+    Swal.fire({
+        title: 'Send Order Update?',
+        text: 'This will send an email notification to the customer about their order status',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Send Update'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/orders/{{ order._id }}/send-update`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Sent!', data.message, 'success');
+                } else {
+                    Swal.fire('Error!', data.message, 'error');
+                }
+            });
+        }
+    });
+}
+
+function trackOrder() {
+    {% if order.shipping.trackingUrl %}
+    window.open('{{ order.shipping.trackingUrl }}', '_blank');
+    {% else %}
+    Swal.fire('Info', 'Tracking information will be available once updated by the carrier', 'info');
+    {% endif %}
+}
+</script>
+{% endblock %}

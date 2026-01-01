@@ -1,0 +1,167 @@
+{% extends "layouts/admin.njk" %}
+
+{% block title %}Brand Details: {{ brand.name }} - {{ APP_NAME }}{% endblock %}
+
+{% set pageTitle = 'Brand Details' %}
+{% set breadcrumbSection = "Brands" %}
+{% set breadcrumbSectionUrl = "/brands" %}
+{% set breadcrumbActive = brand.name %}
+{% set currentPage = "brands" %}
+
+{% block content %}
+<div class="row">
+    <!-- Main Brand Information -->
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Brand Information</h5>
+                <a href="/brands/{{ brand._id }}/edit" class="btn btn-primary btn-sm">
+                    <i class="bx bx-edit"></i> Edit Brand
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <label class="col-sm-3 col-form-label text-muted">Brand Name</label>
+                    <div class="col-sm-9">
+                        <p class="form-control-plaintext fw-semibold">{{ brand.name }}</p>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <label class="col-sm-3 col-form-label text-muted">Slug</label>
+                    <div class="col-sm-9">
+                         <p class="form-control-plaintext font-monospace">{{ brand.slug }}</p>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <label class="col-sm-3 col-form-label text-muted">Website</label>
+                    <div class="col-sm-9">
+                        {% if brand.website %}
+                            <a href="{{ brand.website }}" target="_blank" class="form-control-plaintext">{{ brand.website }} <i class='bx bx-link-external small'></i></a>
+                        {% else %}
+                            <p class="form-control-plaintext text-muted">Not specified</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <label class="col-sm-3 col-form-label text-muted">Description</label>
+                    <div class="col-sm-9">
+                        {% if brand.description %}
+                            <p class="form-control-plaintext">{{ brand.description }}</p>
+                        {% else %}
+                            <p class="form-control-plaintext text-muted">No description available</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEO Information -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">SEO Information</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-3 text-muted">SEO Title</dt>
+                    <dd class="col-sm-9">{{ brand.seoTitle or '-' }}</dd>
+
+                    <dt class="col-sm-3 text-muted">Description</dt>
+                    <dd class="col-sm-9">{{ brand.seoDescription or '-' }}</dd>
+
+                    <dt class="col-sm-3 text-muted">Keywords</dt>
+                    <dd class="col-sm-9">
+                        {% if brand.seoKeywords and brand.seoKeywords.length > 0 %}
+                            {% for keyword in brand.seoKeywords %}
+                                <span class="badge bg-label-secondary">{{ keyword }}</span>
+                            {% endfor %}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Brand Logo -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Brand Logo</h5>
+            </div>
+            <div class="card-body text-center">
+                {% if brand.logo %}
+                    <img src="{{ brand.logo }}" alt="{{ brand.name }}" class="img-fluid rounded border p-1" style="max-width: 200px;">
+                {% else %}
+                    <div class="border rounded p-4 text-muted bg-light">
+                        <i class="bx bx-image fs-1 d-block mb-2"></i>
+                        <small>No logo uploaded</small>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Status & Settings -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Status & Settings</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Status</span>
+                    {% if brand.isActive %}
+                        <span class="badge bg-success">Active</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Inactive</span>
+                    {% endif %}
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Featured</span>
+                    {% if brand.isFeatured %}
+                        <span class="badge bg-warning text-dark"><i class='bx bxs-star me-1'></i> Featured</span>
+                    {% else %}
+                        <span class="badge bg-label-secondary">Not Featured</span>
+                    {% endif %}
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted">Sort Order</span>
+                    <span class="fw-bold">{{ brand.sortOrder }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Meta Information -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">System Info</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Products</span>
+                    <a href="/brands/{{ brand._id }}/products" class="fw-semibold">{{ brand.productsCount or 0 }}</a>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Created At</span>
+                    <span title="{{ brand.createdAt }}">{{ brand.createdAt | date('MMM DD, YYYY') }}</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted">Last Updated</span>
+                    <span title="{{ brand.updatedAt }}">{{ brand.updatedAt | date('MMM DD, YYYY') }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="d-grid">
+            <a href="/brands" class="btn btn-outline-secondary">
+                <i class='bx bx-arrow-back me-1'></i> Back to Brands
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

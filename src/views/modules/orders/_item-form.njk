@@ -1,0 +1,71 @@
+<!-- Order Item Form -->
+<div class="d-flex justify-content-between align-items-start mb-2">
+    <div class="d-flex align-items-center">
+        {% if item.productImage %}
+        <div class="avatar avatar-sm me-3">
+            <img src="{{ item.productImage }}" alt="{{ item.productName }}" class="rounded">
+        </div>
+        {% else %}
+        <div class="avatar avatar-sm me-3">
+            <span class="avatar-initial rounded bg-label-primary">{{ item.productName.charAt(0).toUpperCase() }}</span>
+        </div>
+        {% endif %}
+        <div>
+            <h6 class="mb-0">{{ item.productName }}</h6>
+            <small class="text-muted">SKU: {{ item.productSku or 'N/A' }}</small>
+        </div>
+    </div>
+    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeItem({{ loop.index0 }})">
+        <i class="bx bx-trash"></i>
+    </button>
+</div>
+
+<!-- Hidden fields for product info -->
+<input type="hidden" name="items[{{ loop.index0 }}][product]" value="{{ item.product }}">
+<input type="hidden" name="items[{{ loop.index0 }}][productName]" value="{{ item.productName }}">
+<input type="hidden" name="items[{{ loop.index0 }}][productSku]" value="{{ item.productSku or '' }}">
+<input type="hidden" name="items[{{ loop.index0 }}][productImage]" value="{{ item.productImage or '' }}">
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="mb-3">
+            <label class="form-label">Quantity</label>
+            <input type="number" 
+                   class="form-control item-quantity" 
+                   name="items[{{ loop.index0 }}][quantity]" 
+                   value="{{ item.quantity }}" 
+                   min="1" 
+                   onchange="updateItemTotal({{ loop.index0 }})">
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="mb-3">
+            <label class="form-label">Unit Price</label>
+            <input type="number" 
+                   class="form-control item-price" 
+                   name="items[{{ loop.index0 }}][unitPrice]" 
+                   value="{{ item.unitPrice }}" 
+                   step="0.01" 
+                   onchange="updateItemTotal({{ loop.index0 }})">
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="mb-3">
+            <label class="form-label">Total Price</label>
+            <input type="number" 
+                   class="form-control item-total" 
+                   name="items[{{ loop.index0 }}][totalPrice]" 
+                   value="{{ item.totalPrice }}" 
+                   step="0.01" 
+                   readonly>
+        </div>
+    </div>
+</div>
+
+{% if item.variantName %}
+<div class="mb-2">
+    <small class="text-muted">Variant: {{ item.variantName }}</small>
+    <input type="hidden" name="items[{{ loop.index0 }}][variantId]" value="{{ item.variantId or '' }}">
+    <input type="hidden" name="items[{{ loop.index0 }}][variantName]" value="{{ item.variantName }}">
+</div>
+{% endif %}

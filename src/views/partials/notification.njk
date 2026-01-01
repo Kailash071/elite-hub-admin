@@ -1,0 +1,13 @@
+{% if success.length > 0 %}
+<div class="alert alert-success alert-dismissible notifications toast-alert">
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  {{ success }}
+</div>
+{% endif %}
+
+{% if error.length > 0 %}
+<div class="alert alert-danger alert-dismissible notifications toast-alert">
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  {{ error }}
+</div>
+{% endif %}

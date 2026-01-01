@@ -1,0 +1,313 @@
+{
+  "permissions": [
+    {
+      "name": "Dashboard Access",
+      "slug": "dashboard-access",
+      "description": "View dashboard and analytics overview",
+      "module": "dashboard",
+      "operations": ["view"],
+      "category": "System",
+      "icon": "dashboard",
+      "isSystemPermission": true
+    },
+    {
+      "name": "Products Management",
+      "slug": "products-full-access",
+      "description": "Full access to products - view, add, edit, delete",
+      "module": "products",
+      "operations": ["view", "add", "edit", "delete", "export", "import"],
+      "category": "E-commerce",
+      "icon": "inventory",
+      "isSystemPermission": true
+    },
+    {
+      "name": "Products View Only",
+      "slug": "products-view-only",
+      "description": "View products only",
+      "module": "products",
+      "operations": ["view"],
+      "category": "E-commerce",
+      "icon": "visibility",
+      "isSystemPermission": true
+    },
+    {
+      "name": "Categories Management",
+      "slug": "categories-full-access",
+      "description": "Full access to categories - view, add, edit, delete",
+      "module": "categories",
+      "operations": ["view", "add", "edit", "delete"],
+      "category": "E-commerce",
+      "icon": "category",
+      "isSystemPermission": true
+    },
+    {
+      "name": "Brands Management",
+      "slug": "brands-full-access",
+      "description": "Full access to brands - view, add, edit, delete",
+      "module": "brands",
+      "operations": ["view", "add", "edit", "delete"],
+      "category": "E-commerce",
+      "icon": "brand",
+      "isSystemPermission": true
+    },
+    {
+      "name": "Customers Management",
+      "slug": "customers-full-access",
+      "description": "Full access to customers - view, add, edit, delete",
+      "module": "customers",
+      "operations": ["view", "add", "edit", "delete", "export"],
+      "category": "User Management",
+      "icon": "people",
+      "isSystemPermission": true
+    },
+    {
+      "name": "Customers View Only",
+      "slug": "customers-view-only",
+      "description": "View customers only",
+      "module": "customers",
+      "operations": ["view"],
+      "category": "User Management",
+      "icon": "visibility",
+      "isSystemPermission": true
+    },
+    {
+      "name": "Orders Management",
+      "slug": "orders-full-access",
+      "description": "Full access to orders - view, edit, delete, export",
+      "module": "orders",
+      "operations": ["view", "edit", "delete", "export"],
+      "category": "E-commerce",
+      "icon": "receipt",
+      "isSystemPermission": true
+    },
+    {
+      "name": "Orders View Only",
+      "slug": "orders-view-only",
+      "description": "View orders only",
+      "module": "orders",
+      "operations": ["view"],
+      "category": "E-commerce",
+      "icon": "visibility",
+      "isSystemPermission": true
+    },
+    {
+      "name": "Reviews Management",
+      "slug": "reviews-full-access",
+      "description": "Full access to reviews - view, edit, delete",
+      "module": "reviews",
+      "operations": ["view", "edit", "delete"],
+      "category": "Content",
+      "icon": "star",
+      "isSystemPermission": true
+    },
+    {
+      "name": "Coupons Management",
+      "slug": "coupons-full-access",
+      "description": "Full access to coupons - view, add, edit, delete",
+      "module": "coupons",
+      "operations": ["view", "add", "edit", "delete"],
+      "category": "E-commerce",
+      "icon": "discount",
+      "isSystemPermission": true
+    },
+    {
+      "name": "Banners Management",
+      "slug": "banners-full-access",
+      "description": "Full access to banners - view, add, edit, delete",
+      "module": "banners",
+      "operations": ["view", "add", "edit", "delete"],
+      "category": "Content",
+      "icon": "image",
+      "isSystemPermission": true
+    },
+    {
+      "name": "Settings Management",
+      "slug": "settings-full-access",
+      "description": "Full access to system settings",
+      "module": "settings",
+      "operations": ["view", "edit"],
+      "category": "System",
+      "icon": "settings",
+      "isSystemPermission": true
+    },
+    {
+      "name": "Settings View Only",
+      "slug": "settings-view-only",
+      "description": "View system settings only",
+      "module": "settings",
+      "operations": ["view"],
+      "category": "System",
+      "icon": "visibility",
+      "isSystemPermission": true
+    },
+    {
+      "name": "Admin Management",
+      "slug": "admins-full-access",
+      "description": "Full access to admin users - view, add, edit, delete",
+      "module": "admins",
+      "operations": ["view", "add", "edit", "delete"],
+      "category": "User Management",
+      "icon": "admin_panel_settings",
+      "isSystemPermission": true
+    },
+    {
+      "name": "Roles Management",
+      "slug": "roles-full-access",
+      "description": "Full access to roles - view, add, edit, delete",
+      "module": "roles",
+      "operations": ["view", "add", "edit", "delete"],
+      "category": "User Management",
+      "icon": "group",
+      "isSystemPermission": true
+    },
+    {
+      "name": "Permissions Management",
+      "slug": "permissions-full-access",
+      "description": "Full access to permissions - view, add, edit, delete",
+      "module": "permissions",
+      "operations": ["view", "add", "edit", "delete"],
+      "category": "User Management",
+      "icon": "security",
+      "isSystemPermission": true
+    },
+    {
+      "name": "Reports Access",
+      "slug": "reports-access",
+      "description": "Access to reports and analytics",
+      "module": "reports",
+      "operations": ["view", "export"],
+      "category": "Reports",
+      "icon": "assessment",
+      "isSystemPermission": true
+    },
+    {
+      "name": "Analytics Access",
+      "slug": "analytics-access",
+      "description": "Access to detailed analytics",
+      "module": "analytics",
+      "operations": ["view", "export"],
+      "category": "Reports",
+      "icon": "analytics",
+      "isSystemPermission": true
+    }
+  ],
+  "roles": [
+    {
+      "name": "Super Admin",
+      "slug": "super-admin",
+      "description": "Full system access with all permissions",
+      "level": 100,
+      "isSystemRole": true,
+      "permissionSlugs": [
+        "dashboard-access",
+        "products-full-access",
+        "categories-full-access",
+        "brands-full-access",
+        "customers-full-access",
+        "orders-full-access",
+        "reviews-full-access",
+        "coupons-full-access",
+        "banners-full-access",
+        "settings-full-access",
+        "admins-full-access",
+        "roles-full-access",
+        "permissions-full-access",
+        "reports-access",
+        "analytics-access"
+      ]
+    },
+    {
+      "name": "Manager",
+      "slug": "manager",
+      "description": "Business operations management with most permissions",
+      "level": 80,
+      "isSystemRole": true,
+      "permissionSlugs": [
+        "dashboard-access",
+        "products-full-access",
+        "categories-full-access",
+        "brands-full-access",
+        "customers-full-access",
+        "orders-full-access",
+        "reviews-full-access",
+        "coupons-full-access",
+        "banners-full-access",
+        "settings-view-only",
+        "reports-access",
+        "analytics-access"
+      ]
+    },
+    {
+      "name": "Editor",
+      "slug": "editor",
+      "description": "Content and product management access",
+      "level": 60,
+      "isSystemRole": true,
+      "permissionSlugs": [
+        "dashboard-access",
+        "products-full-access",
+        "categories-full-access",
+        "brands-full-access",
+        "customers-view-only",
+        "orders-view-only",
+        "reviews-full-access",
+        "coupons-full-access",
+        "banners-full-access"
+      ]
+    },
+    {
+      "name": "Viewer",
+      "slug": "viewer",
+      "description": "Read-only access to most modules",
+      "level": 20,
+      "isSystemRole": true,
+      "permissionSlugs": [
+        "dashboard-access",
+        "products-view-only",
+        "customers-view-only",
+        "orders-view-only",
+        "settings-view-only"
+      ]
+    },
+    {
+      "name": "Customer Support",
+      "slug": "customer-support",
+      "description": "Customer service and order management access",
+      "level": 40,
+      "isSystemRole": true,
+      "permissionSlugs": [
+        "dashboard-access",
+        "customers-full-access",
+        "orders-full-access",
+        "products-view-only",
+        "reviews-full-access"
+      ]
+    }
+  ],
+  "admins": [
+    {
+      "firstName": "Super",
+      "lastName": "Admin",
+      "email": "admin@electronic.com",
+      "username": "superadmin",
+      "password": "admin123",
+      "roleSlugs": ["super-admin"],
+      "emailVerified": true,
+      "isActive": true
+    },
+    {
+      "firstName": "System",
+      "lastName": "Manager",
+      "email": "manager@electronic.com", 
+      "username": "manager",
+      "password": "manager123",
+      "roleSlugs": ["manager"],
+      "emailVerified": true,
+      "isActive": true
+    }
+  ],
+  "settings": {
+    "isMaintenance": false,
+    "maintenanceMessage": "The site is currently under maintenance. Please check back later."
+  }
+}

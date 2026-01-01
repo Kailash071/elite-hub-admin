@@ -1,0 +1,874 @@
+{% extends "layouts/admin.njk" %}
+
+{% block title %}{{ 'Edit Customer' if customer else 'Add Customer' }} - {{ APP_NAME }}{% endblock %}
+
+{% set pageTitle = 'Edit Customer' if customer else 'Add Customer' %}
+{% set breadcrumbSection = "Customers" %}
+{% set breadcrumbSectionUrl = "/customers" %}
+{% set breadcrumbActive = 'Edit Customer' if customer else 'Add Customer' %}
+{% set currentPage = "customers" %}
+
+{% block content %}
+<form id="customerForm" action="{{ '/customers/' + customer._id if customer else '/customers' }}" method="POST" novalidate>
+    {% if customer %}
+    <input type="hidden" name="_method" value="PUT">
+    {% endif %}
+    
+    <div class="row">
+        <!-- Main Customer Information -->
+        <div class="col-lg-8">
+            <!-- Navigation Tabs -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <ul class="nav nav-pills card-header-pills" role="tablist">
+                        <li class="nav-item">
+                            <button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#basic-info" role="tab">
+                                <i class="bx bx-user me-1"></i> Basic Info
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#addresses" role="tab">
+                                <i class="bx bx-map me-1"></i> Addresses
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#preferences" role="tab">
+                                <i class="bx bx-cog me-1"></i> Preferences
+                            </button>
+                        </li>
+                        {% if customer %}
+                        <li class="nav-item">
+                            <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#activity" role="tab">
+                                <i class="bx bx-history me-1"></i> Activity
+                            </button>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content">
+                        <!-- Basic Information Tab -->
+                        <div class="tab-pane fade show active" id="basic-info" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label" for="firstName">First Name <span class="text-danger">*</span></label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="firstName"
+                                               name="firstName" 
+                                               placeholder="Enter first name"
+                                               value="{{ customer.firstName if customer else formData.firstName or '' }}"
+                                               required>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label" for="lastName">Last Name <span class="text-danger">*</span></label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="lastName"
+                                               name="lastName" 
+                                               placeholder="Enter last name"
+                                               value="{{ customer.lastName if customer else formData.lastName or '' }}"
+                                               required>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label" for="email">Email Address <span class="text-danger">*</span></label>
+                                        <input type="email" 
+                                               class="form-control" 
+                                               id="email"
+                                               name="email" 
+                                               placeholder="Enter email address"
+                                               value="{{ customer.email if customer else formData.email or '' }}"
+                                               required>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label" for="phone">Phone Number</label>
+                                        <input type="tel" 
+                                               class="form-control" 
+                                               id="phone"
+                                               name="phone" 
+                                               placeholder="Enter phone number"
+                                               value="{{ customer.phone if customer else formData.phone or '' }}">
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label" for="dateOfBirth">Date of Birth</label>
+                                        <input type="date" 
+                                               class="form-control" 
+                                               id="dateOfBirth"
+                                               name="dateOfBirth" 
+                                               value="{{ customer.dateOfBirth | date('YYYY-MM-DD') if customer and customer.dateOfBirth else formData.dateOfBirth or '' }}">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label" for="gender">Gender</label>
+                                        <select class="form-select" id="gender" name="gender">
+                                            <option value="">Select Gender</option>
+                                            <option value="male" {{ 'selected' if (customer and customer.gender == 'male') or formData.gender == 'male' }}>Male</option>
+                                            <option value="female" {{ 'selected' if (customer and customer.gender == 'female') or formData.gender == 'female' }}>Female</option>
+                                            <option value="other" {{ 'selected' if (customer and customer.gender == 'other') or formData.gender == 'other' }}>Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                {% if not customer %}
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label" for="password">Password <span class="text-danger">*</span></label>
+                                        <input type="password" 
+                                               class="form-control" 
+                                               id="password"
+                                               name="password" 
+                                               placeholder="Enter password"
+                                               required>
+                                        <div class="invalid-feedback"></div>
+                                        <div class="form-text">Minimum 6 characters</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label" for="confirmPassword">Confirm Password <span class="text-danger">*</span></label>
+                                        <input type="password" 
+                                               class="form-control" 
+                                               id="confirmPassword"
+                                               name="confirmPassword" 
+                                               placeholder="Confirm password"
+                                               required>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                                {% if customer %}
+                                <div class="col-12">
+                                    <div class="mb-3">
+                                        <label class="form-label" for="adminNotes">Admin Notes</label>
+                                        <textarea class="form-control" 
+                                                  id="adminNotes"
+                                                  name="adminNotes" 
+                                                  rows="3"
+                                                  placeholder="Internal notes about this customer">{{ customer.adminNotes if customer else formData.adminNotes or '' }}</textarea>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Addresses Tab -->
+                        <div class="tab-pane fade" id="addresses" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6>Customer Addresses</h6>
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addAddress()">
+                                    <i class="bx bx-plus"></i> Add Address
+                                </button>
+                            </div>
+                            
+                            <div id="addressesContainer">
+                                {% if customer and customer.addresses %}
+                                {% for address in customer.addresses %}
+                                <div class="address-item card mb-3" data-index="{{ loop.index0 }}">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">
+                                            {{ address.type | title }} Address
+                                            {% if address.isDefault %}
+                                            <span class="badge bg-label-primary ms-2">Default</span>
+                                            {% endif %}
+                                        </h6>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeAddress({{ loop.index0 }})">
+                                            <i class="bx bx-trash"></i>
+                                        </button>
+                                    </div>
+                                    <div class="card-body">
+                                        {% include "modules/customers/_address-form.njk" %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                {% else %}
+                                <div class="text-center text-muted py-4">
+                                    <i class="bx bx-map fs-1 d-block mb-2"></i>
+                                    <p>No addresses added yet</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Preferences Tab -->
+                        <div class="tab-pane fade" id="preferences" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Notification Preferences</label>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" 
+                                                   type="checkbox" 
+                                                   id="newsletter" 
+                                                   name="preferences[newsletter]"
+                                                   {{ 'checked' if (customer and customer.preferences.newsletter) or (not customer) }}>
+                                            <label class="form-check-label" for="newsletter">
+                                                Newsletter Subscription
+                                            </label>
+                                        </div>
+                                        
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" 
+                                                   type="checkbox" 
+                                                   id="emailNotifications" 
+                                                   name="preferences[emailNotifications]"
+                                                   {{ 'checked' if (customer and customer.preferences.emailNotifications) or (not customer) }}>
+                                            <label class="form-check-label" for="emailNotifications">
+                                                Email Notifications
+                                            </label>
+                                        </div>
+                                        
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" 
+                                                   type="checkbox" 
+                                                   id="smsNotifications" 
+                                                   name="preferences[smsNotifications]"
+                                                   {{ 'checked' if (customer and customer.preferences.smsNotifications) or (not customer) }}>
+                                            <label class="form-check-label" for="smsNotifications">
+                                                SMS Notifications
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label" for="language">Preferred Language</label>
+                                        <select class="form-select" id="language" name="preferences[language]">
+                                            <option value="en" {{ 'selected' if (customer and customer.preferences.language == 'en') or (not customer) }}>English</option>
+                                            <option value="hi" {{ 'selected' if (customer and customer.preferences.language == 'hi') }}>Hindi</option>
+                                            <option value="es" {{ 'selected' if (customer and customer.preferences.language == 'es') }}>Spanish</option>
+                                            <option value="fr" {{ 'selected' if (customer and customer.preferences.language == 'fr') }}>French</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label" for="currency">Preferred Currency</label>
+                                        <select class="form-select" id="currency" name="preferences[currency]">
+                                            <option value="INR" {{ 'selected' if (customer and customer.preferences.currency == 'INR') or (not customer) }}>INR - Indian Rupee</option>
+                                            <option value="USD" {{ 'selected' if (customer and customer.preferences.currency == 'USD') }}>USD - US Dollar</option>
+                                            <option value="EUR" {{ 'selected' if (customer and customer.preferences.currency == 'EUR') }}>EUR - Euro</option>
+                                            <option value="GBP" {{ 'selected' if (customer and customer.preferences.currency == 'GBP') }}>GBP - British Pound</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if customer %}
+                        <!-- Activity Tab -->
+                        <div class="tab-pane fade" id="activity" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0">Account Statistics</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span class="text-muted">Total Orders:</span>
+                                                <span>{{ customer.totalOrders or 0 }}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span class="text-muted">Total Spent:</span>
+                                                <span>${{ customer.totalSpent or '0.00' }}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span class="text-muted">Average Order:</span>
+                                                <span>${{ customer.averageOrderValue or '0.00' }}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span class="text-muted">Loyalty Points:</span>
+                                                <span>{{ customer.loyaltyPoints or 0 }}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span class="text-muted">Membership:</span>
+                                                <span class="badge bg-label-{{ 'warning' if customer.membershipTier == 'gold' or customer.membershipTier == 'platinum' else 'info' if customer.membershipTier == 'silver' else 'secondary' }}">
+                                                    {{ customer.membershipTier | title or 'Bronze' }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0">Account Activity</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span class="text-muted">Account Created:</span>
+                                                <span>{{ customer.createdAt | date('MMM DD, YYYY') }}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span class="text-muted">Last Login:</span>
+                                                <span>{{ customer.lastLoginAt | date('MMM DD, YYYY HH:mm') if customer.lastLoginAt else 'Never' }}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span class="text-muted">Email Verified:</span>
+                                                <span>
+                                                    {% if customer.emailVerified %}
+                                                    <i class="bx bx-check-circle text-success"></i> Yes
+                                                    {% else %}
+                                                    <i class="bx bx-x-circle text-danger"></i> No
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span class="text-muted">Phone Verified:</span>
+                                                <span>
+                                                    {% if customer.phoneVerified %}
+                                                    <i class="bx bx-check-circle text-success"></i> Yes
+                                                    {% else %}
+                                                    <i class="bx bx-x-circle text-danger"></i> No
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Status & Settings -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Account Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   id="isActive" 
+                                   name="isActive"
+                                   {{ 'checked' if (customer and customer.isActive) or (not customer) }}>
+                            <label class="form-check-label" for="isActive">
+                                Active Account
+                            </label>
+                        </div>
+                        <div class="form-text">Enable customer account</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   id="emailVerified" 
+                                   name="emailVerified"
+                                   {{ 'checked' if (customer and customer.emailVerified) }}>
+                            <label class="form-check-label" for="emailVerified">
+                                Email Verified
+                            </label>
+                        </div>
+                        <div class="form-text">Mark email as verified</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   id="phoneVerified" 
+                                   name="phoneVerified"
+                                   {{ 'checked' if (customer and customer.phoneVerified) }}>
+                            <label class="form-check-label" for="phoneVerified">
+                                Phone Verified
+                            </label>
+                        </div>
+                        <div class="form-text">Mark phone as verified</div>
+                    </div>
+                    
+                    {% if customer %}
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   id="isBlocked" 
+                                   name="isBlocked"
+                                   {{ 'checked' if (customer and customer.isBlocked) }}>
+                            <label class="form-check-label" for="isBlocked">
+                                Block Account
+                            </label>
+                        </div>
+                        <div class="form-text">Block customer from accessing account</div>
+                    </div>
+                    
+                    <div class="mb-3" id="blockReasonContainer" style="display: {{ 'block' if customer and customer.isBlocked else 'none' }};">
+                        <label class="form-label" for="blockReason">Block Reason</label>
+                        <textarea class="form-control" 
+                                  id="blockReason"
+                                  name="blockReason" 
+                                  rows="2"
+                                  placeholder="Reason for blocking">{{ customer.blockReason if customer else '' }}</textarea>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if customer %}
+            <!-- Loyalty Program -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Loyalty Program</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label" for="loyaltyPoints">Loyalty Points</label>
+                        <input type="number" 
+                               class="form-control" 
+                               id="loyaltyPoints"
+                               name="loyaltyPoints" 
+                               value="{{ customer.loyaltyPoints if customer else '0' }}"
+                               min="0">
+                        <div class="form-text">Current loyalty points balance</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label" for="membershipTier">Membership Tier</label>
+                        <select class="form-select" id="membershipTier" name="membershipTier">
+                            <option value="bronze" {{ 'selected' if (customer and customer.membershipTier == 'bronze') or (not customer) }}>Bronze</option>
+                            <option value="silver" {{ 'selected' if (customer and customer.membershipTier == 'silver') }}>Silver</option>
+                            <option value="gold" {{ 'selected' if (customer and customer.membershipTier == 'gold') }}>Gold</option>
+                            <option value="platinum" {{ 'selected' if (customer and customer.membershipTier == 'platinum') }}>Platinum</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Form Actions -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bx bx-save"></i>
+                            {{ 'Update Customer' if customer else 'Create Customer' }}
+                        </button>
+                        <a href="/customers" class="btn btn-outline-secondary">
+                            <i class="bx bx-arrow-back"></i>
+                            Back to Customers
+                        </a>
+                        {% if customer %}
+                        <a href="/customers/{{ customer._id }}/orders" class="btn btn-outline-info">
+                            <i class="bx bx-receipt"></i>
+                            View Orders ({{ customer.totalOrders or 0 }})
+                        </a>
+                        <button type="button" class="btn btn-outline-warning" onclick="sendVerificationEmail()">
+                            <i class="bx bx-mail-send"></i>
+                            Resend Verification
+                        </button>
+                        <button type="button" class="btn btn-outline-danger" onclick="deleteCustomer('{{ customer._id }}', '{{ customer.firstName }} {{ customer.lastName }}')">
+                            <i class="bx bx-trash"></i>
+                            Delete Customer
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Address Template (Hidden) -->
+<template id="addressTemplate">
+    <div class="address-item card mb-3" data-index="{{INDEX}}">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">New Address</h6>
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeAddress({{INDEX}})">
+                <i class="bx bx-trash"></i>
+            </button>
+        </div>
+        <div class="card-body">
+            <!-- Address form fields will be inserted here -->
+        </div>
+    </div>
+</template>
+{% endblock %}
+
+{% block js %}
+<script>
+let addressIndex = {{ customer.addresses.length if customer and customer.addresses else 0 }};
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeForm();
+    initializeBlockToggle();
+});
+
+function initializeForm() {
+    const form = document.getElementById('customerForm');
+    
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (validateForm()) {
+            submitForm();
+        }
+    });
+}
+
+function initializeBlockToggle() {
+    const blockCheckbox = document.getElementById('isBlocked');
+    const blockReasonContainer = document.getElementById('blockReasonContainer');
+    
+    if (blockCheckbox) {
+        blockCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                blockReasonContainer.style.display = 'block';
+            } else {
+                blockReasonContainer.style.display = 'none';
+            }
+        });
+    }
+}
+
+function validateForm() {
+    const firstName = document.getElementById('firstName').value.trim();
+    const lastName = document.getElementById('lastName').value.trim();
+    const email = document.getElementById('email').value.trim();
+    
+    // Clear previous errors
+    clearFieldErrors();
+    
+    if (!firstName) {
+        showFieldError('firstName', 'First name is required');
+        return false;
+    }
+    
+    if (!lastName) {
+        showFieldError('lastName', 'Last name is required');
+        return false;
+    }
+    
+    if (!email) {
+        showFieldError('email', 'Email address is required');
+        return false;
+    }
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showFieldError('email', 'Please enter a valid email address');
+        return false;
+    }
+    
+    {% if not customer %}
+    // Password validation for new customers
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (!password) {
+        showFieldError('password', 'Password is required');
+        return false;
+    }
+    
+    if (password.length < 6) {
+        showFieldError('password', 'Password must be at least 6 characters');
+        return false;
+    }
+    
+    if (password !== confirmPassword) {
+        showFieldError('confirmPassword', 'Passwords do not match');
+        return false;
+    }
+    {% endif %}
+    
+    return true;
+}
+
+function showFieldError(fieldName, message) {
+    const field = document.getElementById(fieldName);
+    const feedback = field.parentNode.querySelector('.invalid-feedback');
+    
+    field.classList.add('is-invalid');
+    if (feedback) {
+        feedback.textContent = message;
+    }
+    
+    // Scroll to error and switch to correct tab
+    field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    
+    // Find which tab contains the field and activate it
+    const tab = field.closest('.tab-pane');
+    if (tab) {
+        const tabId = tab.getAttribute('id');
+        const tabButton = document.querySelector(`[data-bs-target="#${tabId}"]`);
+        if (tabButton) {
+            const tabInstance = new bootstrap.Tab(tabButton);
+            tabInstance.show();
+        }
+    }
+}
+
+function clearFieldErrors() {
+    document.querySelectorAll('.is-invalid').forEach(field => {
+        field.classList.remove('is-invalid');
+    });
+}
+
+function submitForm() {
+    const form = document.getElementById('customerForm');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    // Show loading state
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+    
+    const formData = new FormData(form);
+    
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                title: 'Success!',
+                text: data.message,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                if (data.redirectUrl) {
+                    window.location.href = data.redirectUrl;
+                } else {
+                    window.location.href = '/customers';
+                }
+            });
+        } else {
+            if (data.errors) {
+                Object.keys(data.errors).forEach(fieldName => {
+                    showFieldError(fieldName, data.errors[fieldName]);
+                });
+            } else {
+                Swal.fire('Error!', data.message || 'Something went wrong', 'error');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire('Error!', 'Something went wrong', 'error');
+    })
+    .finally(() => {
+        // Reset button state
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    });
+}
+
+function addAddress() {
+    const container = document.getElementById('addressesContainer');
+    const template = document.getElementById('addressTemplate');
+    
+    // Remove empty state message if it exists
+    const emptyState = container.querySelector('.text-center');
+    if (emptyState) {
+        emptyState.remove();
+    }
+    
+    const newAddress = template.content.cloneNode(true);
+    const addressHtml = newAddress.querySelector('.address-item');
+    
+    // Replace index placeholder
+    addressHtml.innerHTML = addressHtml.innerHTML.replace(/{{INDEX}}/g, addressIndex);
+    
+    // Add address form fields
+    const cardBody = addressHtml.querySelector('.card-body');
+    cardBody.innerHTML = generateAddressForm(addressIndex);
+    
+    container.appendChild(addressHtml);
+    addressIndex++;
+}
+
+function removeAddress(index) {
+    const addressItem = document.querySelector(`.address-item[data-index="${index}"]`);
+    if (addressItem) {
+        addressItem.remove();
+    }
+    
+    // Show empty state if no addresses left
+    const container = document.getElementById('addressesContainer');
+    if (container.children.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-muted py-4">
+                <i class="bx bx-map fs-1 d-block mb-2"></i>
+                <p>No addresses added yet</p>
+            </div>
+        `;
+    }
+}
+
+function generateAddressForm(index) {
+    return `
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Address Type</label>
+                    <select class="form-select" name="addresses[${index}][type]">
+                        <option value="shipping">Shipping</option>
+                        <option value="billing">Billing</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="addresses[${index}][isDefault]">
+                        <label class="form-check-label">Default Address</label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">First Name</label>
+                    <input type="text" class="form-control" name="addresses[${index}][firstName]" required>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Last Name</label>
+                    <input type="text" class="form-control" name="addresses[${index}][lastName]" required>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="mb-3">
+                    <label class="form-label">Address Line 1</label>
+                    <input type="text" class="form-control" name="addresses[${index}][addressLine1]" required>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="mb-3">
+                    <label class="form-label">Address Line 2</label>
+                    <input type="text" class="form-control" name="addresses[${index}][addressLine2]">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">City</label>
+                    <input type="text" class="form-control" name="addresses[${index}][city]" required>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">State</label>
+                    <input type="text" class="form-control" name="addresses[${index}][state]" required>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Postal Code</label>
+                    <input type="text" class="form-control" name="addresses[${index}][postalCode]" required>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Country</label>
+                    <input type="text" class="form-control" name="addresses[${index}][country]" value="India" required>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+{% if customer %}
+function sendVerificationEmail() {
+    Swal.fire({
+        title: 'Send Verification Email?',
+        text: 'This will send a verification email to the customer',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Send Email',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/customers/{{ customer._id }}/send-verification`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Sent!', data.message, 'success');
+                } else {
+                    Swal.fire('Error!', data.message, 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('Error!', 'Something went wrong', 'error');
+            });
+        }
+    });
+}
+
+function deleteCustomer(customerId, customerName) {
+    Swal.fire({
+        title: 'Delete Customer?',
+        text: `Are you sure you want to delete "${customerName}"? This will permanently remove all customer data.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#d33'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/customers/${customerId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Deleted!', data.message, 'success').then(() => {
+                        window.location.href = '/customers';
+                    });
+                } else {
+                    Swal.fire('Error!', data.message, 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('Error!', 'Something went wrong', 'error');
+            });
+        }
+    });
+}
+{% endif %}
+</script>
+{% endblock %}

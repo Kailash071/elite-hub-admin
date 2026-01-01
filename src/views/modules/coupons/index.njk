@@ -1,0 +1,542 @@
+{% extends "layouts/admin.njk" %}
+
+{% block title %}Coupons - {{ APP_NAME }}{% endblock %}
+
+{% set pageTitle = "Coupons" %}
+{% set breadcrumbActive = "Coupons" %}
+{% set currentPage = "coupons" %}
+
+{% block content %}
+<!-- Statistics Cards -->
+<div class="row">
+  <div class="col-md-6 col-xl-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="card-title d-flex align-items-start justify-content-between">
+          <div class="avatar flex-shrink-0">
+            <img src="/assets/img/icons/unicons/chart-success.png" alt="chart success" class="rounded" />
+          </div>
+        </div>
+        <span class="fw-semibold d-block mb-1">Total Coupons</span>
+        <h3 class="card-title mb-2">{{ stats.totalCoupons or '47' }}</h3>
+        <small class="text-success fw-semibold"><i class="bx bx-up-arrow-alt"></i> {{ stats.couponsGrowth or '+8.2%' }}</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="card-title d-flex align-items-start justify-content-between">
+          <div class="avatar flex-shrink-0">
+            <img src="/assets/img/icons/unicons/wallet-info.png" alt="wallet info" class="rounded" />
+          </div>
+        </div>
+        <span class="fw-semibold d-block mb-1">Active Coupons</span>
+        <h3 class="card-title text-nowrap mb-1">{{ stats.activeCoupons or '32' }}</h3>
+        <small class="text-success fw-semibold"><i class="bx bx-check-circle"></i> Active</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="card-title d-flex align-items-start justify-content-between">
+          <div class="avatar flex-shrink-0">
+            <img src="/assets/img/icons/unicons/cc-primary.png" alt="Credit Card" class="rounded" />
+          </div>
+        </div>
+        <span class="d-block mb-1">Total Usage</span>
+        <h3 class="card-title text-nowrap mb-2">{{ stats.totalUsage or '1,247' }}</h3>
+        <small class="text-info fw-semibold"><i class="bx bx-receipt"></i> Uses</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="card-title d-flex align-items-start justify-content-between">
+          <div class="avatar flex-shrink-0">
+            <img src="/assets/img/icons/unicons/paypal.png" alt="paypal" class="rounded" />
+          </div>
+        </div>
+        <span class="d-block mb-1">Total Savings</span>
+        <h3 class="card-title text-nowrap mb-2">${{ stats.totalSavings or '45,892' }}</h3>
+        <small class="text-warning fw-semibold"><i class="bx bx-dollar"></i> Saved</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Coupons Table -->
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Coupons Management</h5>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary btn-sm" onclick="refreshTable()">
+        <i class="bx bx-refresh"></i> Refresh
+      </button>
+      <button class="btn btn-outline-success btn-sm" onclick="exportData()">
+        <i class="bx bx-download"></i> Export
+      </button>
+      <a href="/coupons/add" class="btn btn-primary btn-sm">
+        <i class="bx bx-plus"></i> Add Coupon
+      </a>
+    </div>
+  </div>
+  <div class="card-body">
+    <!-- Filters -->
+    <div class="row mb-3">
+      <div class="col-md-2">
+        <label class="form-label">Status</label>
+        <select class="form-select" id="filterStatus">
+          <option value="">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+          <option value="expired">Expired</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Type</label>
+        <select class="form-select" id="filterType">
+          <option value="">All Types</option>
+          <option value="percentage">Percentage</option>
+          <option value="fixed">Fixed Amount</option>
+          <option value="freeShipping">Free Shipping</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Visibility</label>
+        <select class="form-select" id="filterVisibility">
+          <option value="">All</option>
+          <option value="public">Public</option>
+          <option value="private">Private</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Search</label>
+        <input type="text" class="form-control" id="searchInput" placeholder="Search coupons...">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">&nbsp;</label>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-primary flex-grow-1" onclick="applyFilters()">Filter</button>
+          <button class="btn btn-outline-secondary" onclick="clearFilters()">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DataTable -->
+    <div class="table-responsive">
+      <table class="table table-hover" id="couponsTable">
+        <thead>
+          <tr>
+            <th>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="selectAll">
+              </div>
+            </th>
+            <th>Coupon</th>
+            <th>Discount</th>
+            <th>Usage</th>
+            <th>Validity</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if coupons and coupons.length %}
+          {% for coupon in coupons %}
+          <tr data-id="{{ coupon._id }}">
+            <td>
+              <div class="form-check">
+                <input class="form-check-input row-checkbox" type="checkbox" value="{{ coupon._id }}">
+              </div>
+            </td>
+            <td>
+              <div>
+                <h6 class="mb-0 d-flex align-items-center">
+                  <span class="badge bg-primary me-2">{{ coupon.code }}</span>
+                  {{ coupon.name }}
+                </h6>
+                <small class="text-muted">{{ coupon.description or 'No description' }}</small>
+                {% if not coupon.isPublic %}
+                <span class="badge bg-label-warning ms-1">Private</span>
+                {% endif %}
+              </div>
+            </td>
+            <td>
+              {% if coupon.discountType == 'percentage' %}
+                <span class="badge bg-label-success">{{ coupon.discountValue }}% OFF</span>
+                {% if coupon.maximumDiscountAmount %}
+                <small class="d-block text-muted">Max: ${{ coupon.maximumDiscountAmount }}</small>
+                {% endif %}
+              {% elif coupon.discountType == 'fixed' %}
+                <span class="badge bg-label-info">${{ coupon.discountValue }} OFF</span>
+              {% elif coupon.discountType == 'freeShipping' %}
+                <span class="badge bg-label-warning">Free Shipping</span>
+              {% endif %}
+              {% if coupon.minimumOrderAmount %}
+              <small class="d-block text-muted">Min: ${{ coupon.minimumOrderAmount }}</small>
+              {% endif %}
+            </td>
+            <td>
+              <div>
+                <span class="badge bg-label-secondary">{{ coupon.currentUsageCount }} Used</span>
+                {% if coupon.usageLimit %}
+                <small class="d-block text-muted">Limit: {{ coupon.usageLimit }}</small>
+                {% else %}
+                <small class="d-block text-muted">Unlimited</small>
+                {% endif %}
+              </div>
+            </td>
+            <td>
+              <div>
+                <small class="d-block">{{ coupon.startDate | date('MMM DD') }} - {{ coupon.endDate | date('MMM DD, YYYY') }}</small>
+                {% set now = moment() %}
+                {% if coupon.startDate > now %}
+                <span class="badge bg-label-info">Not Started</span>
+                {% elif coupon.endDate < now %}
+                <span class="badge bg-label-secondary">Expired</span>
+                {% else %}
+                <span class="badge bg-label-success">Active Period</span>
+                {% endif %}
+              </div>
+            </td>
+            <td>
+              {% if coupon.isActive %}
+                {% if coupon.isCurrentlyValid %}
+                <span class="badge bg-label-success">Active</span>
+                {% else %}
+                <span class="badge bg-label-warning">Inactive</span>
+                {% endif %}
+              {% else %}
+              <span class="badge bg-label-secondary">Disabled</span>
+              {% endif %}
+            </td>
+            <td>{{ coupon.createdAt | date('MMM DD, YYYY') }}</td>
+            <td>
+              <div class="dropdown">
+                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                  <i class="bx bx-dots-vertical-rounded"></i>
+                </button>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" href="/coupons/{{ coupon._id }}/edit">
+                    <i class="bx bx-edit-alt me-1"></i> Edit
+                  </a>
+                  <a class="dropdown-item" href="/coupons/{{ coupon._id }}/usage">
+                    <i class="bx bx-line-chart me-1"></i> View Usage
+                  </a>
+                  <a class="dropdown-item" href="javascript:void(0);" onclick="duplicateCoupon('{{ coupon._id }}')">
+                    <i class="bx bx-copy me-1"></i> Duplicate
+                  </a>
+                  {% if coupon.isActive %}
+                  <a class="dropdown-item" href="javascript:void(0);" onclick="toggleStatus('{{ coupon._id }}', false)">
+                    <i class="bx bx-hide me-1"></i> Disable
+                  </a>
+                  {% else %}
+                  <a class="dropdown-item" href="javascript:void(0);" onclick="toggleStatus('{{ coupon._id }}', true)">
+                    <i class="bx bx-show me-1"></i> Enable
+                  </a>
+                  {% endif %}
+                  <div class="dropdown-divider"></div>
+                  <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteCoupon('{{ coupon._id }}', '{{ coupon.code }}')">
+                    <i class="bx bx-trash me-1"></i> Delete
+                  </a>
+                </div>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk Actions Modal -->
+<div class="modal fade" id="bulkActionModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Bulk Actions</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Select an action for <span id="selectedCount">0</span> selected coupons:</p>
+        <div class="d-grid gap-2">
+          <button class="btn btn-outline-success" onclick="bulkAction('activate')">
+            <i class="bx bx-check-circle me-1"></i> Enable Selected
+          </button>
+          <button class="btn btn-outline-secondary" onclick="bulkAction('deactivate')">
+            <i class="bx bx-hide me-1"></i> Disable Selected
+          </button>
+          <button class="btn btn-outline-danger" onclick="bulkAction('delete')">
+            <i class="bx bx-trash me-1"></i> Delete Selected
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+<script>
+let couponsTable;
+
+document.addEventListener('DOMContentLoaded', function() {
+  initializeDataTable();
+  initializeEventListeners();
+});
+
+function initializeDataTable() {
+  couponsTable = $('#couponsTable').DataTable({
+    processing: true,
+    serverSide: true,
+    ajax: {
+      url: '/coupons/datatable',
+      type: 'POST',
+      data: function(d) {
+        d.status = $('#filterStatus').val();
+        d.type = $('#filterType').val();
+        d.visibility = $('#filterVisibility').val();
+        d.search = $('#searchInput').val();
+      }
+    },
+    columns: [
+      { data: 'checkbox', orderable: false, searchable: false },
+      { data: 'coupon', name: 'name' },
+      { data: 'discount', orderable: false },
+      { data: 'usage', name: 'currentUsageCount' },
+      { data: 'validity', name: 'endDate' },
+      { data: 'status', name: 'isActive' },
+      { data: 'created', name: 'createdAt' },
+      { data: 'actions', orderable: false, searchable: false }
+    ],
+    order: [[6, 'desc']],
+    pageLength: 25,
+    responsive: true
+  });
+}
+
+function initializeEventListeners() {
+  $('#selectAll').on('change', function() {
+    $('.row-checkbox').prop('checked', $(this).prop('checked'));
+    updateBulkActionButton();
+  });
+
+  $(document).on('change', '.row-checkbox', function() {
+    updateBulkActionButton();
+  });
+}
+
+function updateBulkActionButton() {
+  const selectedCount = $('.row-checkbox:checked').length;
+  $('#selectedCount').text(selectedCount);
+  
+  if (selectedCount > 0) {
+    if (!$('#bulkActionBtn').length) {
+      $('.card-header .d-flex').prepend(`
+        <button id="bulkActionBtn" class="btn btn-outline-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#bulkActionModal">
+          <i class="bx bx-check-square"></i> Actions (${selectedCount})
+        </button>
+      `);
+    } else {
+      $('#bulkActionBtn').html(`<i class="bx bx-check-square"></i> Actions (${selectedCount})`);
+    }
+  } else {
+    $('#bulkActionBtn').remove();
+  }
+}
+
+function applyFilters() {
+  couponsTable.ajax.reload();
+}
+
+function clearFilters() {
+  $('#filterStatus').val('');
+  $('#filterType').val('');
+  $('#filterVisibility').val('');
+  $('#searchInput').val('');
+  couponsTable.ajax.reload();
+}
+
+function refreshTable() {
+  couponsTable.ajax.reload();
+}
+
+function exportData() {
+  const filters = {
+    status: $('#filterStatus').val(),
+    type: $('#filterType').val(),
+    visibility: $('#filterVisibility').val(),
+    search: $('#searchInput').val()
+  };
+  
+  window.open('/coupons/export?' + new URLSearchParams(filters));
+}
+
+function toggleStatus(couponId, newStatus) {
+  const action = newStatus ? 'enable' : 'disable';
+  
+  Swal.fire({
+    title: `${action.charAt(0).toUpperCase() + action.slice(1)} Coupon?`,
+    text: `Are you sure you want to ${action} this coupon?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: `Yes, ${action}!`,
+    cancelButtonText: 'Cancel'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch(`/coupons/${couponId}/toggle-status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ isActive: newStatus })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          Swal.fire('Success!', data.message, 'success');
+          couponsTable.ajax.reload();
+        } else {
+          Swal.fire('Error!', data.message, 'error');
+        }
+      })
+      .catch(error => {
+        Swal.fire('Error!', 'Something went wrong', 'error');
+      });
+    }
+  });
+}
+
+function duplicateCoupon(couponId) {
+  Swal.fire({
+    title: 'Duplicate Coupon?',
+    text: 'This will create a copy of the coupon with a new code',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Duplicate',
+    cancelButtonText: 'Cancel'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch(`/coupons/${couponId}/duplicate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          Swal.fire('Duplicated!', data.message, 'success');
+          couponsTable.ajax.reload();
+        } else {
+          Swal.fire('Error!', data.message, 'error');
+        }
+      })
+      .catch(error => {
+        Swal.fire('Error!', 'Something went wrong', 'error');
+      });
+    }
+  });
+}
+
+function deleteCoupon(couponId, couponCode) {
+  Swal.fire({
+    title: 'Delete Coupon?',
+    text: `Are you sure you want to delete coupon "${couponCode}"? This action cannot be undone.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, delete it!',
+    cancelButtonText: 'Cancel',
+    confirmButtonColor: '#d33'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch(`/coupons/${couponId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          Swal.fire('Deleted!', data.message, 'success');
+          couponsTable.ajax.reload();
+        } else {
+          Swal.fire('Error!', data.message, 'error');
+        }
+      })
+      .catch(error => {
+        Swal.fire('Error!', 'Something went wrong', 'error');
+      });
+    }
+  });
+}
+
+function bulkAction(action) {
+  const selectedIds = $('.row-checkbox:checked').map(function() {
+    return $(this).val();
+  }).get();
+
+  if (selectedIds.length === 0) {
+    Swal.fire('Warning!', 'Please select at least one coupon', 'warning');
+    return;
+  }
+
+  const actionText = {
+    activate: 'enable',
+    deactivate: 'disable',
+    delete: 'delete'
+  };
+
+  Swal.fire({
+    title: `${actionText[action].charAt(0).toUpperCase() + actionText[action].slice(1)} Coupons?`,
+    text: `Are you sure you want to ${actionText[action]} ${selectedIds.length} selected coupons?`,
+    icon: action === 'delete' ? 'warning' : 'question',
+    showCancelButton: true,
+    confirmButtonText: `Yes, ${action}!`,
+    cancelButtonText: 'Cancel',
+    confirmButtonColor: action === 'delete' ? '#d33' : '#696cff'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch('/coupons/bulk-action', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+          action: action,
+          couponIds: selectedIds
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          Swal.fire('Success!', data.message, 'success');
+          couponsTable.ajax.reload();
+          $('#bulkActionModal').modal('hide');
+          $('.row-checkbox').prop('checked', false);
+          $('#selectAll').prop('checked', false);
+          updateBulkActionButton();
+        } else {
+          Swal.fire('Error!', data.message, 'error');
+        }
+      })
+      .catch(error => {
+        Swal.fire('Error!', 'Something went wrong', 'error');
+      });
+    }
+  });
+}
+</script>
+{% endblock %}

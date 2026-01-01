@@ -1,0 +1,27 @@
+<!-- Footer -->
+<footer class="content-footer footer bg-footer-theme">
+  <div
+    class="container-xxl py-2 "
+  >
+    <div class="mb-2 mb-md-0 d-flex justify-content-center align-items-center">
+      ©
+      <script>
+        document.write(new Date().getFullYear())
+      </script>
+      <span class="mx-1">Electronic Shop , made with ❤️ by</span> 
+      <a
+        href="https://kailashpro.co.in/"
+        target="_blank"
+        class="footer-link fw-bolder"
+        > Kailash Tech</a
+      >
+      {% if NODE_ENV != 'production' %}
+      <span class="badge bg-warning text-dark ms-2">{{
+        NODE_ENV | upper
+      }}</span>
+      {% endif %}
+    </div>
+
+  </div>
+</footer>
+<!-- / Footer -->

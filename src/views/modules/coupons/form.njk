@@ -1,0 +1,767 @@
+{% extends "layouts/admin.njk" %}
+
+{% block title %}{{ 'Edit Coupon' if coupon else 'Add Coupon' }} - {{ APP_NAME }}{% endblock %}
+
+{% set pageTitle = 'Edit Coupon' if coupon else 'Add Coupon' %}
+{% set breadcrumbSection = "Coupons" %}
+{% set breadcrumbSectionUrl = "/coupons" %}
+{% set breadcrumbActive = 'Edit Coupon' if coupon else 'Add Coupon' %}
+{% set currentPage = "coupons" %}
+
+{% block content %}
+<form id="couponForm" action="{{ '/coupons/' + coupon._id if coupon else '/coupons' }}" method="POST" novalidate>
+    {% if coupon %}
+    <input type="hidden" name="_method" value="PUT">
+    {% endif %}
+    
+    <div class="row">
+        <!-- Main Coupon Information -->
+        <div class="col-lg-8">
+            <!-- Basic Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Basic Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label" for="code">Coupon Code <span class="text-danger">*</span></label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="code"
+                                       name="code" 
+                                       placeholder="Enter coupon code (e.g., SAVE20)"
+                                       value="{{ coupon.code if coupon else formData.code or '' }}"
+                                       style="text-transform: uppercase;"
+                                       required>
+                                <div class="invalid-feedback"></div>
+                                <div class="form-text">Use only letters, numbers, and underscores</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label" for="name">Display Name <span class="text-danger">*</span></label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="name"
+                                       name="name" 
+                                       placeholder="Enter display name"
+                                       value="{{ coupon.name if coupon else formData.name or '' }}"
+                                       required>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label class="form-label" for="description">Description</label>
+                                <textarea class="form-control" 
+                                          id="description"
+                                          name="description" 
+                                          rows="2"
+                                          placeholder="Brief description of the coupon">{{ coupon.description if coupon else formData.description or '' }}</textarea>
+                                <div class="form-text">Maximum 500 characters</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Discount Configuration -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Discount Configuration</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label" for="discountType">Discount Type <span class="text-danger">*</span></label>
+                                <select class="form-select" id="discountType" name="discountType" required>
+                                    <option value="">Select discount type</option>
+                                    <option value="percentage" {{ 'selected' if (coupon and coupon.discountType == 'percentage') or formData.discountType == 'percentage' }}>Percentage Discount</option>
+                                    <option value="fixed" {{ 'selected' if (coupon and coupon.discountType == 'fixed') or formData.discountType == 'fixed' }}>Fixed Amount Discount</option>
+                                    <option value="freeShipping" {{ 'selected' if (coupon and coupon.discountType == 'freeShipping') or formData.discountType == 'freeShipping' }}>Free Shipping</option>
+                                </select>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6" id="discountValueContainer">
+                            <div class="mb-3">
+                                <label class="form-label" for="discountValue">
+                                    <span id="discountValueLabel">Discount Value</span> 
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text" id="discountPrefix">%</span>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="discountValue"
+                                           name="discountValue" 
+                                           placeholder="0"
+                                           value="{{ coupon.discountValue if coupon else formData.discountValue or '' }}"
+                                           step="0.01"
+                                           min="0"
+                                           required>
+                                </div>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6" id="minimumOrderContainer">
+                            <div class="mb-3">
+                                <label class="form-label" for="minimumOrderAmount">Minimum Order Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="minimumOrderAmount"
+                                           name="minimumOrderAmount" 
+                                           placeholder="0.00"
+                                           value="{{ coupon.minimumOrderAmount if coupon else formData.minimumOrderAmount or '' }}"
+                                           step="0.01"
+                                           min="0">
+                                </div>
+                                <div class="form-text">Minimum order value required to use this coupon</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6" id="maximumDiscountContainer" style="display: none;">
+                            <div class="mb-3">
+                                <label class="form-label" for="maximumDiscountAmount">Maximum Discount Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="maximumDiscountAmount"
+                                           name="maximumDiscountAmount" 
+                                           placeholder="0.00"
+                                           value="{{ coupon.maximumDiscountAmount if coupon else formData.maximumDiscountAmount or '' }}"
+                                           step="0.01"
+                                           min="0">
+                                </div>
+                                <div class="form-text">Maximum discount cap for percentage discounts</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Usage Limits -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Usage Limits</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label" for="usageLimit">Total Usage Limit</label>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="usageLimit"
+                                       name="usageLimit" 
+                                       placeholder="Leave empty for unlimited"
+                                       value="{{ coupon.usageLimit if coupon else formData.usageLimit or '' }}"
+                                       min="1">
+                                <div class="form-text">Maximum number of times this coupon can be used</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label" for="usageLimitPerCustomer">Usage Limit Per Customer</label>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="usageLimitPerCustomer"
+                                       name="usageLimitPerCustomer" 
+                                       value="{{ coupon.usageLimitPerCustomer if coupon else formData.usageLimitPerCustomer or '1' }}"
+                                       min="1">
+                                <div class="form-text">Maximum uses per individual customer</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Validity Period -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Validity Period</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label" for="startDate">Start Date <span class="text-danger">*</span></label>
+                                <input type="datetime-local" 
+                                       class="form-control" 
+                                       id="startDate"
+                                       name="startDate" 
+                                       value="{{ coupon.startDate | date('YYYY-MM-DDTHH:mm') if coupon and coupon.startDate else formData.startDate or '' }}"
+                                       required>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label" for="endDate">End Date <span class="text-danger">*</span></label>
+                                <input type="datetime-local" 
+                                       class="form-control" 
+                                       id="endDate"
+                                       name="endDate" 
+                                       value="{{ coupon.endDate | date('YYYY-MM-DDTHH:mm') if coupon and coupon.endDate else formData.endDate or '' }}"
+                                       required>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Restrictions -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Product & Customer Restrictions</h5>
+                    <span class="badge bg-label-info">Optional</span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label" for="applicableCategories">Applicable Categories</label>
+                                <select class="form-select" id="applicableCategories" name="applicableCategories" multiple>
+                                    {% if categories %}
+                                    {% for category in categories %}
+                                    <option value="{{ category._id }}" 
+                                            {{ 'selected' if (coupon and coupon.applicableCategories and category._id in coupon.applicableCategories) }}>
+                                        {{ category.name }}
+                                    </option>
+                                    {% endfor %}
+                                    {% endif %}
+                                </select>
+                                <div class="form-text">Leave empty to apply to all categories</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label" for="excludedCategories">Excluded Categories</label>
+                                <select class="form-select" id="excludedCategories" name="excludedCategories" multiple>
+                                    {% if categories %}
+                                    {% for category in categories %}
+                                    <option value="{{ category._id }}" 
+                                            {{ 'selected' if (coupon and coupon.excludedCategories and category._id in coupon.excludedCategories) }}>
+                                        {{ category.name }}
+                                    </option>
+                                    {% endfor %}
+                                    {% endif %}
+                                </select>
+                                <div class="form-text">Categories to exclude from discount</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" 
+                                       type="checkbox" 
+                                       id="firstOrderOnly" 
+                                       name="firstOrderOnly"
+                                       {{ 'checked' if (coupon and coupon.firstOrderOnly) }}>
+                                <label class="form-check-label" for="firstOrderOnly">
+                                    First Order Only
+                                </label>
+                                <div class="form-text">Only allow first-time customers to use this coupon</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Status & Settings -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Status & Visibility</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   id="isActive" 
+                                   name="isActive"
+                                   {{ 'checked' if (coupon and coupon.isActive) or (not coupon) }}>
+                            <label class="form-check-label" for="isActive">
+                                Active Coupon
+                            </label>
+                        </div>
+                        <div class="form-text">Enable this coupon for use</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   id="isPublic" 
+                                   name="isPublic"
+                                   {{ 'checked' if (coupon and coupon.isPublic) or (not coupon) }}>
+                            <label class="form-check-label" for="isPublic">
+                                Public Visibility
+                            </label>
+                        </div>
+                        <div class="form-text">Show in public coupon listings</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preview -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Coupon Preview</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="coupon-preview p-3 border border-dashed">
+                        <div class="coupon-code mb-2">
+                            <span class="badge bg-primary fs-5" id="previewCode">COUPONCODE</span>
+                        </div>
+                        <div class="coupon-discount mb-2">
+                            <h4 class="text-success mb-0" id="previewDiscount">0% OFF</h4>
+                        </div>
+                        <div class="coupon-description">
+                            <small class="text-muted" id="previewDescription">Coupon description</small>
+                        </div>
+                        <div class="coupon-validity mt-2">
+                            <small class="text-muted">
+                                Valid: <span id="previewValidity">-</span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if coupon %}
+            <!-- Usage Statistics -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Usage Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Times Used:</span>
+                        <span>{{ coupon.currentUsageCount or 0 }}</span>
+                    </div>
+                    {% if coupon.usageLimit %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Usage Limit:</span>
+                        <span>{{ coupon.usageLimit }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Remaining:</span>
+                        <span class="text-success">{{ coupon.remainingUses or (coupon.usageLimit - coupon.currentUsageCount) }}</span>
+                    </div>
+                    {% else %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Usage Limit:</span>
+                        <span class="text-info">Unlimited</span>
+                    </div>
+                    {% endif %}
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Created:</span>
+                        <span>{{ coupon.createdAt | date('MMM DD, YYYY') }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Form Actions -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bx bx-save"></i>
+                            {{ 'Update Coupon' if coupon else 'Create Coupon' }}
+                        </button>
+                        <a href="/coupons" class="btn btn-outline-secondary">
+                            <i class="bx bx-arrow-back"></i>
+                            Back to Coupons
+                        </a>
+                        {% if coupon %}
+                        <button type="button" class="btn btn-outline-info" onclick="testCoupon()">
+                            <i class="bx bx-test-tube"></i>
+                            Test Coupon
+                        </button>
+                        <button type="button" class="btn btn-outline-warning" onclick="duplicateCoupon()">
+                            <i class="bx bx-copy"></i>
+                            Duplicate
+                        </button>
+                        <button type="button" class="btn btn-outline-danger" onclick="deleteCoupon('{{ coupon._id }}', '{{ coupon.code }}')">
+                            <i class="bx bx-trash"></i>
+                            Delete Coupon
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initializeForm();
+    updateDiscountTypeFields();
+    updatePreview();
+});
+
+function initializeForm() {
+    const form = document.getElementById('couponForm');
+    const codeInput = document.getElementById('code');
+    const discountTypeSelect = document.getElementById('discountType');
+    
+    // Auto-uppercase coupon code
+    codeInput.addEventListener('input', function() {
+        this.value = this.value.toUpperCase().replace(/[^A-Z0-9_]/g, '');
+        updatePreview();
+    });
+    
+    // Update discount type dependent fields
+    discountTypeSelect.addEventListener('change', function() {
+        updateDiscountTypeFields();
+        updatePreview();
+    });
+    
+    // Update preview on input changes
+    ['name', 'description', 'discountValue', 'startDate', 'endDate'].forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.addEventListener('input', updatePreview);
+        }
+    });
+    
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (validateForm()) {
+            submitForm();
+        }
+    });
+}
+
+function updateDiscountTypeFields() {
+    const discountType = document.getElementById('discountType').value;
+    const discountValueContainer = document.getElementById('discountValueContainer');
+    const maximumDiscountContainer = document.getElementById('maximumDiscountContainer');
+    const minimumOrderContainer = document.getElementById('minimumOrderContainer');
+    const discountPrefix = document.getElementById('discountPrefix');
+    const discountValueLabel = document.getElementById('discountValueLabel');
+    
+    switch (discountType) {
+        case 'percentage':
+            discountValueContainer.style.display = 'block';
+            maximumDiscountContainer.style.display = 'block';
+            minimumOrderContainer.style.display = 'block';
+            discountPrefix.textContent = '%';
+            discountValueLabel.textContent = 'Percentage Value';
+            document.getElementById('discountValue').setAttribute('max', '100');
+            break;
+            
+        case 'fixed':
+            discountValueContainer.style.display = 'block';
+            maximumDiscountContainer.style.display = 'none';
+            minimumOrderContainer.style.display = 'block';
+            discountPrefix.textContent = '$';
+            discountValueLabel.textContent = 'Fixed Amount';
+            document.getElementById('discountValue').removeAttribute('max');
+            break;
+            
+        case 'freeShipping':
+            discountValueContainer.style.display = 'none';
+            maximumDiscountContainer.style.display = 'none';
+            minimumOrderContainer.style.display = 'block';
+            break;
+            
+        default:
+            discountValueContainer.style.display = 'none';
+            maximumDiscountContainer.style.display = 'none';
+            minimumOrderContainer.style.display = 'none';
+            break;
+    }
+}
+
+function updatePreview() {
+    const code = document.getElementById('code').value || 'COUPONCODE';
+    const name = document.getElementById('name').value || 'Coupon Name';
+    const description = document.getElementById('description').value || 'Coupon description';
+    const discountType = document.getElementById('discountType').value;
+    const discountValue = document.getElementById('discountValue').value || '0';
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    
+    // Update preview elements
+    document.getElementById('previewCode').textContent = code;
+    document.getElementById('previewDescription').textContent = description;
+    
+    // Update discount display
+    let discountText = '0% OFF';
+    if (discountType === 'percentage') {
+        discountText = `${discountValue}% OFF`;
+    } else if (discountType === 'fixed') {
+        discountText = `$${discountValue} OFF`;
+    } else if (discountType === 'freeShipping') {
+        discountText = 'FREE SHIPPING';
+    }
+    document.getElementById('previewDiscount').textContent = discountText;
+    
+    // Update validity
+    let validityText = '-';
+    if (startDate && endDate) {
+        const start = new Date(startDate).toLocaleDateString();
+        const end = new Date(endDate).toLocaleDateString();
+        validityText = `${start} - ${end}`;
+    }
+    document.getElementById('previewValidity').textContent = validityText;
+}
+
+function validateForm() {
+    const code = document.getElementById('code').value.trim();
+    const name = document.getElementById('name').value.trim();
+    const discountType = document.getElementById('discountType').value;
+    const startDate = new Date(document.getElementById('startDate').value);
+    const endDate = new Date(document.getElementById('endDate').value);
+    
+    // Clear previous errors
+    clearFieldErrors();
+    
+    if (!code) {
+        showFieldError('code', 'Coupon code is required');
+        return false;
+    }
+    
+    if (!/^[A-Z0-9_]+$/.test(code)) {
+        showFieldError('code', 'Coupon code can only contain uppercase letters, numbers, and underscores');
+        return false;
+    }
+    
+    if (!name) {
+        showFieldError('name', 'Display name is required');
+        return false;
+    }
+    
+    if (!discountType) {
+        showFieldError('discountType', 'Please select a discount type');
+        return false;
+    }
+    
+    if (discountType !== 'freeShipping') {
+        const discountValue = parseFloat(document.getElementById('discountValue').value);
+        if (!discountValue || discountValue <= 0) {
+            showFieldError('discountValue', 'Please enter a valid discount value');
+            return false;
+        }
+        
+        if (discountType === 'percentage' && discountValue > 100) {
+            showFieldError('discountValue', 'Percentage discount cannot exceed 100%');
+            return false;
+        }
+    }
+    
+    if (!startDate || !endDate) {
+        if (!startDate) showFieldError('startDate', 'Start date is required');
+        if (!endDate) showFieldError('endDate', 'End date is required');
+        return false;
+    }
+    
+    if (endDate <= startDate) {
+        showFieldError('endDate', 'End date must be after start date');
+        return false;
+    }
+    
+    return true;
+}
+
+function showFieldError(fieldName, message) {
+    const field = document.getElementById(fieldName);
+    const feedback = field.parentNode.querySelector('.invalid-feedback');
+    
+    field.classList.add('is-invalid');
+    if (feedback) {
+        feedback.textContent = message;
+    }
+    
+    field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function clearFieldErrors() {
+    document.querySelectorAll('.is-invalid').forEach(field => {
+        field.classList.remove('is-invalid');
+    });
+}
+
+function submitForm() {
+    const form = document.getElementById('couponForm');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    // Show loading state
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+    
+    const formData = new FormData(form);
+    
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                title: 'Success!',
+                text: data.message,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                if (data.redirectUrl) {
+                    window.location.href = data.redirectUrl;
+                } else {
+                    window.location.href = '/coupons';
+                }
+            });
+        } else {
+            if (data.errors) {
+                Object.keys(data.errors).forEach(fieldName => {
+                    showFieldError(fieldName, data.errors[fieldName]);
+                });
+            } else {
+                Swal.fire('Error!', data.message || 'Something went wrong', 'error');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire('Error!', 'Something went wrong', 'error');
+    })
+    .finally(() => {
+        // Reset button state
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    });
+}
+
+{% if coupon %}
+function testCoupon() {
+    Swal.fire({
+        title: 'Test Coupon',
+        html: `
+            <div class="text-start">
+                <div class="mb-3">
+                    <label class="form-label">Order Amount</label>
+                    <input type="number" id="testOrderAmount" class="form-control" placeholder="100.00" step="0.01" min="0">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Customer ID (Optional)</label>
+                    <input type="text" id="testCustomerId" class="form-control" placeholder="Customer ID for testing restrictions">
+                </div>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Test',
+        cancelButtonText: 'Cancel',
+        preConfirm: () => {
+            const orderAmount = document.getElementById('testOrderAmount').value;
+            const customerId = document.getElementById('testCustomerId').value;
+            
+            if (!orderAmount) {
+                Swal.showValidationMessage('Please enter an order amount');
+                return false;
+            }
+            
+            return { orderAmount: parseFloat(orderAmount), customerId };
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/coupons/{{ coupon._id }}/test`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(result.value)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Test Results',
+                        html: `
+                            <div class="text-start">
+                                <p><strong>Applicable:</strong> ${data.applicable ? 'Yes' : 'No'}</p>
+                                <p><strong>Discount Amount:</strong> $${data.discountAmount || '0.00'}</p>
+                                <p><strong>Final Amount:</strong> $${data.finalAmount || '0.00'}</p>
+                                ${data.reason ? `<p><strong>Reason:</strong> ${data.reason}</p>` : ''}
+                            </div>
+                        `,
+                        icon: data.applicable ? 'success' : 'warning'
+                    });
+                } else {
+                    Swal.fire('Error!', data.message, 'error');
+                }
+            });
+        }
+    });
+}
+
+function duplicateCoupon() {
+    window.location.href = `/coupons/{{ coupon._id }}/duplicate`;
+}
+
+function deleteCoupon(couponId, couponCode) {
+    Swal.fire({
+        title: 'Delete Coupon?',
+        text: `Are you sure you want to delete coupon "${couponCode}"? This action cannot be undone.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#d33'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/coupons/${couponId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Deleted!', data.message, 'success').then(() => {
+                        window.location.href = '/coupons';
+                    });
+                } else {
+                    Swal.fire('Error!', data.message, 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('Error!', 'Something went wrong', 'error');
+            });
+        }
+    });
+}
+{% endif %}
+</script>
+{% endblock %}

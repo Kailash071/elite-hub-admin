@@ -1,0 +1,546 @@
+{% extends "layouts/admin.njk" %}
+
+{% block title %}Categories - {{ APP_NAME }}{% endblock %}
+
+{% set pageTitle = "Categories" %}
+{% set breadcrumbActive = "Categories" %}
+{% set currentPage = "categories" %}
+
+{% block content %}
+<!-- Statistics Cards -->
+<div class="row">
+  <div class="col-md-6 col-xl-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="card-title d-flex align-items-start justify-content-between">
+          <div class="avatar flex-shrink-0">
+            <img src="/assets/img/icons/unicons/chart-success.png" alt="chart success" class="rounded" />
+          </div>
+        </div>
+        <span class="fw-semibold d-block mb-1">Total Categories</span>
+        <h3 class="card-title mb-2">{{ stats.totalCategories or '87' }}</h3>
+        <small class="text-success fw-semibold"><i class="bx bx-up-arrow-alt"></i> {{ stats.categoriesGrowth or '+5.4%' }}</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="card-title d-flex align-items-start justify-content-between">
+          <div class="avatar flex-shrink-0">
+            <img src="/assets/img/icons/unicons/wallet-info.png" alt="wallet info" class="rounded" />
+          </div>
+        </div>
+        <span class="fw-semibold d-block mb-1">Main Categories</span>
+        <h3 class="card-title text-nowrap mb-1">{{ stats.mainCategories or '12' }}</h3>
+        <small class="text-info fw-semibold"><i class="bx bx-category"></i> Level 0</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="card-title d-flex align-items-start justify-content-between">
+          <div class="avatar flex-shrink-0">
+            <img src="/assets/img/icons/unicons/cc-primary.png" alt="Credit Card" class="rounded" />
+          </div>
+        </div>
+        <span class="d-block mb-1">Active Categories</span>
+        <h3 class="card-title text-nowrap mb-2">{{ stats.activeCategories or '75' }}</h3>
+        <small class="text-success fw-semibold"><i class="bx bx-check-circle"></i> Active</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="card">
+      <div class="card-body">
+        <div class="card-title d-flex align-items-start justify-content-between">
+          <div class="avatar flex-shrink-0">
+            <img src="/assets/img/icons/unicons/paypal.png" alt="paypal" class="rounded" />
+          </div>
+        </div>
+        <span class="d-block mb-1">With Products</span>
+        <h3 class="card-title text-nowrap mb-2">{{ stats.categoriesWithProducts or '63' }}</h3>
+        <small class="text-warning fw-semibold"><i class="bx bx-box"></i> Products</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Categories Table -->
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Categories Management</h5>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary btn-sm" onclick="refreshTable()">
+        <i class="bx bx-refresh"></i> Refresh
+      </button>
+      <button class="btn btn-outline-info btn-sm" onclick="toggleTreeView()" id="treeViewBtn">
+        <i class="bx bx-sitemap"></i> Tree View
+      </button>
+      <a href="/categories/add" class="btn btn-primary btn-sm">
+        <i class="bx bx-plus"></i> Add Category
+      </a>
+    </div>
+  </div>
+  <div class="card-body">
+    <!-- Filters -->
+    <div class="row mb-3">
+      <div class="col-md-2">
+        <label class="form-label">Level</label>
+        <select class="form-select" id="filterLevel">
+          <option value="">All Levels</option>
+          <option value="0">Main Categories</option>
+          <option value="1">Sub Categories</option>
+          <option value="2">Sub-sub Categories</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Parent Category</label>
+        <select class="form-select" id="filterParent">
+          <option value="">All</option>
+          {% if parentCategories %}
+          {% for parent in parentCategories %}
+          <option value="{{ parent._id }}">{{ parent.name }}</option>
+          {% endfor %}
+          {% endif %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Status</label>
+        <select class="form-select" id="filterStatus">
+          <option value="">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Search</label>
+        <input type="text" class="form-control" id="searchInput" placeholder="Search categories...">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">&nbsp;</label>
+        <div class="d-grid">
+          <button class="btn btn-outline-primary" onclick="applyFilters()">Filter</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tree View -->
+    <div id="treeView" class="d-none">
+      <div class="category-tree">
+        {% if categoryTree %}
+          {% for category in categoryTree %}
+            {% include "modules/categories/_tree-item.njk" %}
+          {% endfor %}
+        {% else %}
+          <p class="text-muted">No categories found</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- DataTable View -->
+    <div id="tableView" class="table-responsive">
+      <table class="table table-hover" id="categoriesTable">
+        <thead>
+          <tr>
+            <th>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="selectAll">
+              </div>
+            </th>
+            <th>Category</th>
+            <th>Level</th>
+            <th>Parent</th>
+            <th>Products</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if categories and categories.length %}
+          {% for category in categories %}
+          <tr data-id="{{ category._id }}">
+            <td>
+              <div class="form-check">
+                <input class="form-check-input row-checkbox" type="checkbox" value="{{ category._id }}">
+              </div>
+            </td>
+            <td>
+              <div class="d-flex align-items-center">
+                {% if category.image %}
+                <div class="avatar avatar-sm me-3">
+                  <img src="{{ category.image }}" alt="{{ category.name }}" class="rounded">
+                </div>
+                {% else %}
+                <div class="avatar avatar-sm me-3">
+                  <span class="avatar-initial rounded bg-label-primary">{{ category.name.charAt(0).toUpperCase() }}</span>
+                </div>
+                {% endif %}
+                <div>
+                  <h6 class="mb-0">
+                    {% for i in range(category.level) %}
+                      <span class="text-muted">└── </span>
+                    {% endfor %}
+                    {{ category.name }}
+                  </h6>
+                  <small class="text-muted">{{ category.slug }}</small>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="badge bg-label-info">Level {{ category.level }}</span>
+            </td>
+            <td>
+              {% if category.parentCategory %}
+                <span class="text-primary">{{ category.parentCategory.name }}</span>
+              {% else %}
+                <span class="text-muted">Root Category</span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="badge bg-label-secondary">{{ category.productsCount or 0 }}</span>
+            </td>
+            <td>
+              {% if category.isActive %}
+              <span class="badge bg-label-success">Active</span>
+              {% else %}
+              <span class="badge bg-label-secondary">Inactive</span>
+              {% endif %}
+            </td>
+            <td>{{ category.createdAt | date('MMM DD, YYYY') }}</td>
+            <td>
+              <div class="dropdown">
+                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                  <i class="bx bx-dots-vertical-rounded"></i>
+                </button>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" href="/categories/{{ category._id }}/edit">
+                    <i class="bx bx-edit-alt me-1"></i> Edit
+                  </a>
+                  <a class="dropdown-item" href="/categories/add?parent={{ category._id }}">
+                    <i class="bx bx-plus me-1"></i> Add Subcategory
+                  </a>
+                  <a class="dropdown-item" href="/categories/{{ category._id }}/products">
+                    <i class="bx bx-box me-1"></i> View Products
+                  </a>
+                  {% if category.isActive %}
+                  <a class="dropdown-item" href="javascript:void(0);" onclick="toggleStatus('{{ category._id }}', false)">
+                    <i class="bx bx-hide me-1"></i> Deactivate
+                  </a>
+                  {% else %}
+                  <a class="dropdown-item" href="javascript:void(0);" onclick="toggleStatus('{{ category._id }}', true)">
+                    <i class="bx bx-show me-1"></i> Activate
+                  </a>
+                  {% endif %}
+                  <div class="dropdown-divider"></div>
+                  <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteCategory('{{ category._id }}', '{{ category.name }}')">
+                    <i class="bx bx-trash me-1"></i> Delete
+                  </a>
+                </div>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk Actions Modal -->
+<div class="modal fade" id="bulkActionModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Bulk Actions</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Select an action for <span id="selectedCount">0</span> selected categories:</p>
+        <div class="d-grid gap-2">
+          <button class="btn btn-outline-success" onclick="bulkAction('activate')">
+            <i class="bx bx-check-circle me-1"></i> Activate Selected
+          </button>
+          <button class="btn btn-outline-secondary" onclick="bulkAction('deactivate')">
+            <i class="bx bx-hide me-1"></i> Deactivate Selected
+          </button>
+          <button class="btn btn-outline-danger" onclick="bulkAction('delete')">
+            <i class="bx bx-trash me-1"></i> Delete Selected
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+<script>
+let categoriesTable;
+let isTreeView = false;
+
+document.addEventListener('DOMContentLoaded', function() {
+  initializeDataTable();
+  initializeEventListeners();
+});
+
+function initializeDataTable() {
+  categoriesTable = $('#categoriesTable').DataTable({
+    processing: true,
+    serverSide: true,
+    ajax: {
+      url: '/categories/datatable',
+      type: 'POST',
+      data: function(d) {
+        d.level = $('#filterLevel').val();
+        d.parent = $('#filterParent').val();
+        d.status = $('#filterStatus').val();
+        d.search = $('#searchInput').val();
+      }
+    },
+    columns: [
+      { data: 'checkbox', orderable: false, searchable: false },
+      { data: 'name', name: 'name' },
+      { data: 'level', name: 'level' },
+      { data: 'parent', name: 'parentCategory' },
+      { data: 'productsCount', name: 'productsCount' },
+      { data: 'status', name: 'isActive' },
+      { data: 'createdAt', name: 'createdAt' },
+      { data: 'actions', orderable: false, searchable: false }
+    ],
+    order: [[6, 'desc']],
+    pageLength: 25,
+    responsive: true
+  });
+}
+
+function initializeEventListeners() {
+  // Select all functionality
+  $('#selectAll').on('change', function() {
+    $('.row-checkbox').prop('checked', $(this).prop('checked'));
+    updateBulkActionButton();
+  });
+
+  // Individual checkbox change
+  $(document).on('change', '.row-checkbox', function() {
+    updateBulkActionButton();
+  });
+}
+
+function updateBulkActionButton() {
+  const selectedCount = $('.row-checkbox:checked').length;
+  $('#selectedCount').text(selectedCount);
+  
+  if (selectedCount > 0) {
+    if (!$('#bulkActionBtn').length) {
+      $('.card-header .d-flex').prepend(`
+        <button id="bulkActionBtn" class="btn btn-outline-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#bulkActionModal">
+          <i class="bx bx-check-square"></i> Actions (${selectedCount})
+        </button>
+      `);
+    } else {
+      $('#bulkActionBtn').html(`<i class="bx bx-check-square"></i> Actions (${selectedCount})`);
+    }
+  } else {
+    $('#bulkActionBtn').remove();
+  }
+}
+
+function applyFilters() {
+  if (isTreeView) {
+    // Reload tree view with filters
+    loadTreeView();
+  } else {
+    categoriesTable.ajax.reload();
+  }
+}
+
+function refreshTable() {
+  if (isTreeView) {
+    loadTreeView();
+  } else {
+    categoriesTable.ajax.reload();
+  }
+}
+
+function toggleTreeView() {
+  const treeView = document.getElementById('treeView');
+  const tableView = document.getElementById('tableView');
+  const btn = document.getElementById('treeViewBtn');
+
+  if (isTreeView) {
+    // Switch to table view
+    treeView.classList.add('d-none');
+    tableView.classList.remove('d-none');
+    btn.innerHTML = '<i class="bx bx-sitemap"></i> Tree View';
+    isTreeView = false;
+  } else {
+    // Switch to tree view
+    tableView.classList.add('d-none');
+    treeView.classList.remove('d-none');
+    btn.innerHTML = '<i class="bx bx-table"></i> Table View';
+    isTreeView = true;
+    loadTreeView();
+  }
+}
+
+function loadTreeView() {
+  const treeView = document.getElementById('treeView');
+  
+  // Show loading
+  treeView.innerHTML = '<div class="text-center py-4"><div class="spinner-border" role="status"></div></div>';
+  
+  const filters = {
+    level: $('#filterLevel').val(),
+    parent: $('#filterParent').val(),
+    status: $('#filterStatus').val(),
+    search: $('#searchInput').val()
+  };
+  
+  fetch('/categories/tree?' + new URLSearchParams(filters))
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        treeView.innerHTML = data.html;
+      } else {
+        treeView.innerHTML = '<p class="text-danger">Failed to load tree view</p>';
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      treeView.innerHTML = '<p class="text-danger">Error loading tree view</p>';
+    });
+}
+
+function toggleStatus(categoryId, newStatus) {
+  const action = newStatus ? 'activate' : 'deactivate';
+  
+  Swal.fire({
+    title: `${action.charAt(0).toUpperCase() + action.slice(1)} Category?`,
+    text: `Are you sure you want to ${action} this category?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: `Yes, ${action}!`,
+    cancelButtonText: 'Cancel'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch(`/categories/${categoryId}/toggle-status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ isActive: newStatus })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          Swal.fire('Success!', data.message, 'success');
+          refreshTable();
+        } else {
+          Swal.fire('Error!', data.message, 'error');
+        }
+      })
+      .catch(error => {
+        Swal.fire('Error!', 'Something went wrong', 'error');
+      });
+    }
+  });
+}
+
+function deleteCategory(categoryId, categoryName) {
+  Swal.fire({
+    title: 'Delete Category?',
+    text: `Are you sure you want to delete "${categoryName}"? This will also delete all subcategories and remove category associations from products.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, delete it!',
+    cancelButtonText: 'Cancel',
+    confirmButtonColor: '#d33'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch(`/categories/${categoryId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          Swal.fire('Deleted!', data.message, 'success');
+          refreshTable();
+        } else {
+          Swal.fire('Error!', data.message, 'error');
+        }
+      })
+      .catch(error => {
+        Swal.fire('Error!', 'Something went wrong', 'error');
+      });
+    }
+  });
+}
+
+function bulkAction(action) {
+  const selectedIds = $('.row-checkbox:checked').map(function() {
+    return $(this).val();
+  }).get();
+
+  if (selectedIds.length === 0) {
+    Swal.fire('Warning!', 'Please select at least one category', 'warning');
+    return;
+  }
+
+  const actionText = {
+    activate: 'activate',
+    deactivate: 'deactivate', 
+    delete: 'delete'
+  };
+
+  Swal.fire({
+    title: `${actionText[action].charAt(0).toUpperCase() + actionText[action].slice(1)} Categories?`,
+    text: `Are you sure you want to ${actionText[action]} ${selectedIds.length} selected categories?`,
+    icon: action === 'delete' ? 'warning' : 'question',
+    showCancelButton: true,
+    confirmButtonText: `Yes, ${action}!`,
+    cancelButtonText: 'Cancel',
+    confirmButtonColor: action === 'delete' ? '#d33' : '#696cff'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch('/categories/bulk-action', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+          action: action,
+          categoryIds: selectedIds
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          Swal.fire('Success!', data.message, 'success');
+          refreshTable();
+          $('#bulkActionModal').modal('hide');
+          $('.row-checkbox').prop('checked', false);
+          $('#selectAll').prop('checked', false);
+          updateBulkActionButton();
+        } else {
+          Swal.fire('Error!', data.message, 'error');
+        }
+      })
+      .catch(error => {
+        Swal.fire('Error!', 'Something went wrong', 'error');
+      });
+    }
+  });
+}
+</script>
+{% endblock %}

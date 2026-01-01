@@ -1,0 +1,406 @@
+{% extends "layouts/admin.njk" %}
+
+{% block title %}{{ customer.firstName }} {{ customer.lastName }} - Customer Details - {{ APP_NAME }}{% endblock %}
+
+{% set pageTitle = customer.firstName + ' ' + customer.lastName %}
+{% set breadcrumbSection = "Customers" %}
+{% set breadcrumbSectionUrl = "/customers" %}
+{% set breadcrumbActive = "Customer Details" %}
+{% set currentPage = "customers" %}
+
+{% block content %}
+<div class="row">
+    <!-- Customer Profile -->
+    <div class="col-lg-8">
+        <!-- Navigation Tabs -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <ul class="nav nav-pills card-header-pills" role="tablist">
+                    <li class="nav-item">
+                        <button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#overview" role="tab">
+                            <i class="bx bx-user me-1"></i> Overview
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#orders" role="tab">
+                            <i class="bx bx-receipt me-1"></i> Orders ({{ customer.totalOrders or 0 }})
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#addresses" role="tab">
+                            <i class="bx bx-map me-1"></i> Addresses
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#activity" role="tab">
+                            <i class="bx bx-history me-1"></i> Activity
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="tab-content">
+                    <!-- Overview Tab -->
+                    <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="mb-3">Personal Information</h6>
+                                <div class="mb-2">
+                                    <strong>Full Name:</strong> {{ customer.firstName }} {{ customer.lastName }}
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Email:</strong> 
+                                    {{ customer.email }}
+                                    {% if customer.emailVerified %}
+                                        <i class="bx bx-badge-check text-success ms-1" title="Verified"></i>
+                                    {% else %}
+                                        <i class="bx bx-x-circle text-danger ms-1" title="Not Verified"></i>
+                                    {% endif %}
+                                </div>
+                                {% if customer.phone %}
+                                <div class="mb-2">
+                                    <strong>Phone:</strong> 
+                                    {{ customer.phone }}
+                                    {% if customer.phoneVerified %}
+                                        <i class="bx bx-badge-check text-success ms-1" title="Verified"></i>
+                                    {% else %}
+                                        <i class="bx bx-x-circle text-danger ms-1" title="Not Verified"></i>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                                {% if customer.dateOfBirth %}
+                                <div class="mb-2">
+                                    <strong>Date of Birth:</strong> {{ customer.dateOfBirth | date('MMM DD, YYYY') }}
+                                </div>
+                                {% endif %}
+                                {% if customer.gender %}
+                                <div class="mb-2">
+                                    <strong>Gender:</strong> {{ customer.gender | title }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <h6 class="mb-3">Account Information</h6>
+                                <div class="mb-2">
+                                    <strong>Status:</strong>
+                                    {% if customer.isBlocked %}
+                                        <span class="badge bg-danger">Blocked</span>
+                                    {% elif customer.isActive %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    {% endif %}
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Member Since:</strong> {{ customer.createdAt | date('MMM DD, YYYY') }}
+                                </div>
+                                {% if customer.lastLoginAt %}
+                                <div class="mb-2">
+                                    <strong>Last Login:</strong> {{ customer.lastLoginAt | date('MMM DD, YYYY HH:mm') }}
+                                </div>
+                                {% endif %}
+                                <div class="mb-2">
+                                    <strong>Membership Tier:</strong>
+                                    <span class="badge bg-{{ 'warning' if customer.membershipTier == 'gold' or customer.membershipTier == 'platinum' else 'info' if customer.membershipTier == 'silver' else 'secondary' }}">
+                                        {{ customer.membershipTier | title or 'Bronze' }}
+                                    </span>
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Loyalty Points:</strong> {{ customer.loyaltyPoints or 0 }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if customer.adminNotes %}
+                        <hr>
+                        <h6 class="mb-3">Admin Notes</h6>
+                        <div class="alert alert-info">
+                            {{ customer.adminNotes }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Orders Tab -->
+                    <div class="tab-pane fade" id="orders" role="tabpanel">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Order #</th>
+                                        <th>Date</th>
+                                        <th>Items</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- TODO: Populate with actual orders -->
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-4">
+                                            No orders found
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Addresses Tab -->
+                    <div class="tab-pane fade" id="addresses" role="tabpanel">
+                        {% if customer.addresses and customer.addresses.length %}
+                        <div class="row">
+                            {% for address in customer.addresses %}
+                            <div class="col-md-6 mb-4">
+                                <div class="card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">
+                                            {{ address.type | title }} Address
+                                            {% if address.isDefault %}
+                                            <span class="badge bg-primary ms-2">Default</span>
+                                            {% endif %}
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-2">{{ address.firstName }} {{ address.lastName }}</div>
+                                        {% if address.company %}<div class="mb-2">{{ address.company }}</div>{% endif %}
+                                        <div class="mb-2">{{ address.addressLine1 }}</div>
+                                        {% if address.addressLine2 %}<div class="mb-2">{{ address.addressLine2 }}</div>{% endif %}
+                                        <div class="mb-2">{{ address.city }}, {{ address.state }} {{ address.postalCode }}</div>
+                                        <div class="mb-2">{{ address.country }}</div>
+                                        {% if address.phone %}<div class="text-muted">{{ address.phone }}</div>{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="bx bx-map fs-1 d-block mb-2"></i>
+                            <p>No addresses on file</p>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Activity Tab -->
+                    <div class="tab-pane fade" id="activity" role="tabpanel">
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-point timeline-point-success"></div>
+                                <div class="timeline-event">
+                                    <div class="timeline-header">
+                                        <h6 class="timeline-title">Account Created</h6>
+                                        <small class="text-muted">{{ customer.createdAt | date('MMM DD, YYYY HH:mm') }}</small>
+                                    </div>
+                                    <p class="timeline-body">Customer account was created</p>
+                                </div>
+                            </div>
+                            
+                            {% if customer.lastLoginAt %}
+                            <div class="timeline-item">
+                                <div class="timeline-point timeline-point-info"></div>
+                                <div class="timeline-event">
+                                    <div class="timeline-header">
+                                        <h6 class="timeline-title">Last Login</h6>
+                                        <small class="text-muted">{{ customer.lastLoginAt | date('MMM DD, YYYY HH:mm') }}</small>
+                                    </div>
+                                    <p class="timeline-body">Customer logged into their account</p>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- TODO: Add more activity items from database -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Quick Stats -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Customer Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted">Total Orders:</span>
+                    <span class="fw-bold">{{ customer.totalOrders or 0 }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted">Total Spent:</span>
+                    <span class="fw-bold">${{ customer.totalSpent or '0.00' }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted">Average Order:</span>
+                    <span class="fw-bold">${{ customer.averageOrderValue or '0.00' }}</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted">Loyalty Points:</span>
+                    <span class="fw-bold">{{ customer.loyaltyPoints or 0 }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preferences -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Preferences</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Newsletter:</span>
+                    <span class="badge bg-{{ 'success' if customer.preferences.newsletter else 'secondary' }}">
+                        {{ 'Yes' if customer.preferences.newsletter else 'No' }}
+                    </span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Email Notifications:</span>
+                    <span class="badge bg-{{ 'success' if customer.preferences.emailNotifications else 'secondary' }}">
+                        {{ 'Yes' if customer.preferences.emailNotifications else 'No' }}
+                    </span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>SMS Notifications:</span>
+                    <span class="badge bg-{{ 'success' if customer.preferences.smsNotifications else 'secondary' }}">
+                        {{ 'Yes' if customer.preferences.smsNotifications else 'No' }}
+                    </span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Language:</span>
+                    <span>{{ customer.preferences.language | upper }}</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>Currency:</span>
+                    <span>{{ customer.preferences.currency }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="card">
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="/customers/{{ customer._id }}/edit" class="btn btn-primary">
+                        <i class="bx bx-edit-alt"></i> Edit Customer
+                    </a>
+                    <a href="/customers/{{ customer._id }}/orders" class="btn btn-outline-info">
+                        <i class="bx bx-receipt"></i> View Orders
+                    </a>
+                    {% if not customer.emailVerified %}
+                    <button type="button" class="btn btn-outline-warning" onclick="sendVerificationEmail()">
+                        <i class="bx bx-mail-send"></i> Send Verification
+                    </button>
+                    {% endif %}
+                    {% if customer.isBlocked %}
+                    <button type="button" class="btn btn-outline-success" onclick="toggleBlock(false)">
+                        <i class="bx bx-check"></i> Unblock Customer
+                    </button>
+                    {% else %}
+                    <button type="button" class="btn btn-outline-warning" onclick="toggleBlock(true)">
+                        <i class="bx bx-block"></i> Block Customer
+                    </button>
+                    {% endif %}
+                    <a href="/customers" class="btn btn-outline-secondary">
+                        <i class="bx bx-arrow-back"></i> Back to Customers
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+function sendVerificationEmail() {
+    Swal.fire({
+        title: 'Send Verification Email?',
+        text: 'This will send a verification email to the customer',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Send Email'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/customers/{{ customer._id }}/send-verification`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Sent!', data.message, 'success');
+                } else {
+                    Swal.fire('Error!', data.message, 'error');
+                }
+            });
+        }
+    });
+}
+
+function toggleBlock(block) {
+    const action = block ? 'block' : 'unblock';
+    
+    let inputHtml = '';
+    if (block) {
+        inputHtml = `
+            <div class="mb-3">
+                <label class="form-label">Reason for blocking</label>
+                <textarea id="blockReason" class="form-control" rows="3" placeholder="Enter reason for blocking"></textarea>
+            </div>
+        `;
+    }
+    
+    Swal.fire({
+        title: `${action.charAt(0).toUpperCase() + action.slice(1)} Customer?`,
+        html: inputHtml,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: `${action.charAt(0).toUpperCase() + action.slice(1)} Customer`,
+        preConfirm: () => {
+            if (block) {
+                const reason = document.getElementById('blockReason').value;
+                if (!reason.trim()) {
+                    Swal.showValidationMessage('Please provide a reason for blocking');
+                    return false;
+                }
+                return { reason };
+            }
+            return {};
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const body = { isBlocked: block };
+            if (block && result.value.reason) {
+                body.blockReason = result.value.reason;
+            }
+            
+            fetch(`/customers/{{ customer._id }}/toggle-block`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(body)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Success!', data.message, 'success').then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire('Error!', data.message, 'error');
+                }
+            });
+        }
+    });
+}
+</script>
+{% endblock %}

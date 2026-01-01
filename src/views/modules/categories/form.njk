@@ -1,0 +1,625 @@
+{% extends "layouts/admin.njk" %}
+
+{% block title %}{{ 'Edit Category' if category else 'Add Category' }} - {{ APP_NAME }}{% endblock %}
+
+{% set pageTitle = 'Edit Category' if category else 'Add Category' %}
+{% set breadcrumbSection = "Categories" %}
+{% set breadcrumbSectionUrl = "/categories" %}
+{% set breadcrumbActive = 'Edit Category' if category else 'Add Category' %}
+{% set currentPage = "categories" %}
+
+{% block content %}
+<form id="categoryForm" action="{{ '/categories/' + category._id if category else '/categories' }}" method="POST" enctype="multipart/form-data" novalidate>
+    {% if category %}
+    <input type="hidden" name="_method" value="PUT">
+    {% endif %}
+    
+    <div class="row">
+        <!-- Main Category Information -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Category Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label class="form-label" for="name">Category Name <span class="text-danger">*</span></label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="name"
+                                       name="name" 
+                                       placeholder="Enter category name"
+                                       value="{{ category.name if category else formData.name or '' }}"
+                                       required>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label" for="slug">Slug <span class="text-danger">*</span></label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="slug"
+                                       name="slug" 
+                                       placeholder="category-slug"
+                                       value="{{ category.slug if category else formData.slug or '' }}"
+                                       required>
+                                <div class="invalid-feedback"></div>
+                                <div class="form-text">URL friendly version of the name</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label" for="parentCategory">Parent Category</label>
+                                <select class="form-select" id="parentCategory" name="parentCategory">
+                                    <option value="">-- Root Category --</option>
+                                    {% if parentCategories %}
+                                    {% for parent in parentCategories %}
+                                      {% if not category or parent._id != category._id %}
+                                        <option value="{{ parent._id }}" 
+                                                {{ 'selected' if (category and category.parentCategory and parent._id == category.parentCategory._id) or (formData.parentCategory == parent._id) or (query.parent == parent._id) }}>
+                                          {% for i in range(parent.level) %}── {% endfor %}{{ parent.name }}
+                                        </option>
+                                      {% endif %}
+                                    {% endfor %}
+                                    {% endif %}
+                                </select>
+                                <div class="form-text">Select parent category to create subcategory</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label class="form-label" for="description">Description</label>
+                                <textarea class="form-control" 
+                                          id="description"
+                                          name="description" 
+                                          rows="4"
+                                          placeholder="Enter category description">{{ category.description if category else formData.description or '' }}</textarea>
+                                <div class="invalid-feedback"></div>
+                                <div class="form-text">Maximum 1000 characters</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEO Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">SEO Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label" for="seoTitle">SEO Title</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="seoTitle"
+                               name="seoTitle" 
+                               placeholder="SEO optimized title"
+                               value="{{ category.seoTitle if category else formData.seoTitle or '' }}"
+                               maxlength="60">
+                        <div class="form-text">
+                            <span id="seoTitleCount">0</span>/60 characters
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label" for="seoDescription">SEO Description</label>
+                        <textarea class="form-control" 
+                                  id="seoDescription"
+                                  name="seoDescription" 
+                                  rows="3"
+                                  placeholder="SEO meta description"
+                                  maxlength="160">{{ category.seoDescription if category else formData.seoDescription or '' }}</textarea>
+                        <div class="form-text">
+                            <span id="seoDescCount">0</span>/160 characters
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label" for="seoKeywords">SEO Keywords</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="seoKeywords"
+                               name="seoKeywords" 
+                               placeholder="keyword1, keyword2, keyword3"
+                               value="{% if category and category.seoKeywords %}{{ category.seoKeywords.join(', ') }}{% else %}{{ formData.seoKeywords or '' }}{% endif %}">
+                        <div class="form-text">Separate keywords with commas</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attributes (Future Enhancement) -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Category Attributes</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bx bx-info-circle me-2"></i>
+                        Category attributes for filtering will be available in future updates.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Category Image -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Category Image</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Category Image</label>
+                        <input type="file" 
+                               class="form-control" 
+                               name="image" 
+                               accept="image/*"
+                               onchange="previewImage(this, 'imagePreview')">
+                        <div class="form-text">Recommended: 400x300px, Max: 2MB</div>
+                    </div>
+                    
+                    <div id="imagePreview" class="text-center">
+                        {% if category and category.image %}
+                        <img src="{{ category.image }}" alt="{{ category.name }}" class="img-fluid rounded" style="max-width: 200px;">
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeImage()">
+                                <i class="bx bx-trash"></i> Remove Image
+                            </button>
+                        </div>
+                        {% else %}
+                        <div class="border rounded p-3 text-muted">
+                            <i class="bx bx-image fs-1 d-block mb-2"></i>
+                            <small>No image uploaded</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status & Settings -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Status & Settings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   id="isActive" 
+                                   name="isActive"
+                                   {{ 'checked' if (category and category.isActive) or (not category) else '' }}>
+                            <label class="form-check-label" for="isActive">
+                                Active Status
+                            </label>
+                        </div>
+                        <div class="form-text">Enable this category for display</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label" for="sortOrder">Sort Order</label>
+                        <input type="number" 
+                               class="form-control" 
+                               id="sortOrder"
+                               name="sortOrder" 
+                               value="{{ category.sortOrder if category else formData.sortOrder or '0' }}"
+                               min="0">
+                        <div class="form-text">Higher numbers appear first</div>
+                    </div>
+                    
+                    {% if category %}
+                    <div class="mb-3">
+                        <label class="form-label">Level Information</label>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Current Level:</span>
+                            <span class="badge bg-label-info">Level {{ category.level }}</span>
+                        </div>
+                        <div class="form-text">
+                            {% if category.level == 0 %}
+                                This is a root category
+                            {% elif category.level == 1 %}
+                                This is a subcategory
+                            {% else %}
+                                This is a sub-subcategory
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Category Hierarchy Preview -->
+            {% if category %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Category Path</h5>
+                </div>
+                <div class="card-body">
+                    <div class="category-path">
+                        {% if category.parentCategory %}
+                        {% set ancestors = category.ancestors or [] %}
+                        {% for ancestor in ancestors %}
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="text-muted me-2">{{ loop.index0 * 2 | repeat('&nbsp;') | safe }}└─</span>
+                            <span>{{ ancestor.name }}</span>
+                        </div>
+                        {% endfor %}
+                        {% endif %}
+                        <div class="d-flex align-items-center">
+                            <span class="text-muted me-2">{{ category.level * 2 | repeat('&nbsp;') | safe }}{{ '└─' if category.level > 0 }}</span>
+                            <strong class="text-primary">{{ category.name }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Additional Information -->
+            {% if category %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Products:</span>
+                        <span>{{ category.productsCount or 0 }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Subcategories:</span>
+                        <span>{{ category.subcategoriesCount or 0 }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Created:</span>
+                        <span>{{ category.createdAt | date('MMM DD, YYYY') }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Updated:</span>
+                        <span>{{ category.updatedAt | date('MMM DD, YYYY') }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Form Actions -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bx bx-save"></i>
+                            {{ 'Update Category' if category else 'Create Category' }}
+                        </button>
+                        <a href="/categories" class="btn btn-outline-secondary">
+                            <i class="bx bx-arrow-back"></i>
+                            Back to Categories
+                        </a>
+                        {% if category %}
+                        <a href="/categories/{{ category._id }}/products" class="btn btn-outline-info">
+                            <i class="bx bx-box"></i>
+                            View Products ({{ category.productsCount or 0 }})
+                        </a>
+                        <a href="/categories/add?parent={{ category._id }}" class="btn btn-outline-success">
+                            <i class="bx bx-plus"></i>
+                            Add Subcategory
+                        </a>
+                        <button type="button" class="btn btn-outline-danger" onclick="deleteCategory('{{ category._id }}', '{{ category.name }}')">
+                            <i class="bx bx-trash"></i>
+                            Delete Category
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initializeForm();
+    updateCharacterCounts();
+    updateLevelPreview();
+});
+
+function initializeForm() {
+    const form = document.getElementById('categoryForm');
+    const nameInput = document.getElementById('name');
+    const slugInput = document.getElementById('slug');
+    const seoTitleInput = document.getElementById('seoTitle');
+    const seoDescInput = document.getElementById('seoDescription');
+    const parentSelect = document.getElementById('parentCategory');
+
+    // Auto-generate slug from name
+    nameInput.addEventListener('input', function() {
+        if (!slugInput.dataset.manual) {
+            const slug = generateSlug(this.value);
+            slugInput.value = slug;
+        }
+    });
+
+    // Mark slug as manually edited
+    slugInput.addEventListener('input', function() {
+        this.dataset.manual = 'true';
+        this.value = generateSlug(this.value);
+    });
+
+    // Character count for SEO fields
+    seoTitleInput.addEventListener('input', updateCharacterCounts);
+    seoDescInput.addEventListener('input', updateCharacterCounts);
+
+    // Update level preview when parent changes
+    parentSelect.addEventListener('change', updateLevelPreview);
+
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (validateForm()) {
+            submitForm();
+        }
+    });
+}
+
+function generateSlug(text) {
+    return text
+        .toString()
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w\-]+/g, '')
+        .replace(/\-\-+/g, '-')
+        .replace(/^-+/, '')
+        .replace(/-+$/, '');
+}
+
+function updateCharacterCounts() {
+    const seoTitle = document.getElementById('seoTitle').value;
+    const seoDesc = document.getElementById('seoDescription').value;
+    
+    document.getElementById('seoTitleCount').textContent = seoTitle.length;
+    document.getElementById('seoDescCount').textContent = seoDesc.length;
+}
+
+function updateLevelPreview() {
+    const parentSelect = document.getElementById('parentCategory');
+    const selectedOption = parentSelect.options[parentSelect.selectedIndex];
+    
+    if (selectedOption && selectedOption.value) {
+        // Calculate level based on parent selection
+        const parentText = selectedOption.text;
+        const level = (parentText.match(/──/g) || []).length + 1;
+        
+        // Show level info if we have a container for it
+        const levelInfo = document.getElementById('levelInfo');
+        if (levelInfo) {
+            levelInfo.innerHTML = `
+                <div class="alert alert-info">
+                    <i class="bx bx-info-circle me-2"></i>
+                    This category will be at <strong>Level ${level}</strong>
+                </div>
+            `;
+        }
+    }
+}
+
+function validateForm() {
+    const name = document.getElementById('name').value.trim();
+    const slug = document.getElementById('slug').value.trim();
+    
+    // Clear previous errors
+    clearFieldErrors();
+    
+    if (!name) {
+        showFieldError('name', 'Category name is required');
+        return false;
+    }
+    
+    if (!slug) {
+        showFieldError('slug', 'Slug is required');
+        return false;
+    }
+    
+    // Validate slug format
+    if (!/^[a-z0-9\-]+$/.test(slug)) {
+        showFieldError('slug', 'Slug can only contain lowercase letters, numbers, and hyphens');
+        return false;
+    }
+    
+    return true;
+}
+
+function showFieldError(fieldName, message) {
+    const field = document.getElementById(fieldName);
+    const feedback = field.parentNode.querySelector('.invalid-feedback');
+    
+    field.classList.add('is-invalid');
+    if (feedback) {
+        feedback.textContent = message;
+    }
+    
+    // Scroll to error
+    field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function clearFieldErrors() {
+    document.querySelectorAll('.is-invalid').forEach(field => {
+        field.classList.remove('is-invalid');
+    });
+}
+
+function submitForm() {
+    const form = document.getElementById('categoryForm');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    // Show loading state
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+    
+    const formData = new FormData(form);
+    
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                title: 'Success!',
+                text: data.message,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                if (data.redirectUrl) {
+                    window.location.href = data.redirectUrl;
+                } else {
+                    window.location.href = '/categories';
+                }
+            });
+        } else {
+            if (data.errors) {
+                Object.keys(data.errors).forEach(fieldName => {
+                    showFieldError(fieldName, data.errors[fieldName]);
+                });
+            } else {
+                Swal.fire('Error!', data.message || 'Something went wrong', 'error');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire('Error!', 'Something went wrong', 'error');
+    })
+    .finally(() => {
+        // Reset button state
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    });
+}
+
+function previewImage(input, previewId) {
+    const preview = document.getElementById(previewId);
+    
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        
+        // Validate file size (2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            Swal.fire('Error!', 'File size must be less than 2MB', 'error');
+            input.value = '';
+            return;
+        }
+        
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            Swal.fire('Error!', 'Please select a valid image file', 'error');
+            input.value = '';
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.innerHTML = `
+                <img src="${e.target.result}" alt="Preview" class="img-fluid rounded" style="max-width: 200px;">
+                <div class="mt-2">
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removePreviewImage('${previewId}', '${input.name}')">
+                        <i class="bx bx-trash"></i> Remove
+                    </button>
+                </div>
+            `;
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function removePreviewImage(previewId, inputName) {
+    document.getElementById(previewId).innerHTML = `
+        <div class="border rounded p-3 text-muted">
+            <i class="bx bx-image fs-1 d-block mb-2"></i>
+            <small>No image selected</small>
+        </div>
+    `;
+    document.querySelector(`input[name="${inputName}"]`).value = '';
+}
+
+function removeImage() {
+    const preview = document.getElementById('imagePreview');
+    
+    Swal.fire({
+        title: 'Remove Image?',
+        text: 'Are you sure you want to remove the current image?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, remove it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            preview.innerHTML = `
+                <div class="border rounded p-3 text-muted">
+                    <i class="bx bx-image fs-1 d-block mb-2"></i>
+                    <small>No image uploaded</small>
+                </div>
+            `;
+            
+            // Add hidden input to mark for removal
+            if (!document.querySelector('input[name="removeImage"]')) {
+                const removeInput = document.createElement('input');
+                removeInput.type = 'hidden';
+                removeInput.name = 'removeImage';
+                removeInput.value = 'true';
+                document.getElementById('categoryForm').appendChild(removeInput);
+            }
+        }
+    });
+}
+
+{% if category %}
+function deleteCategory(categoryId, categoryName) {
+    Swal.fire({
+        title: 'Delete Category?',
+        text: `Are you sure you want to delete "${categoryName}"? This will also delete all subcategories and remove category associations from products.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#d33'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/categories/${categoryId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Deleted!', data.message, 'success').then(() => {
+                        window.location.href = '/categories';
+                    });
+                } else {
+                    Swal.fire('Error!', data.message, 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('Error!', 'Something went wrong', 'error');
+            });
+        }
+    });
+}
+{% endif %}
+</script>
+{% endblock %}

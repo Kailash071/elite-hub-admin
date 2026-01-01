@@ -1,0 +1,10 @@
+<!-- Breadcrumb -->
+{% if pageTitle or breadcrumbActive %}
+<h4 class="fw-bold py-3 mb-4">
+  {% if breadcrumbSection %}
+  <span class="text-muted fw-light">{{ breadcrumbSection }}/</span>
+  {% endif %}
+  {{ pageTitle or breadcrumbActive or 'Page' }}
+</h4>
+{% endif %}
+<!-- / Breadcrumb -->

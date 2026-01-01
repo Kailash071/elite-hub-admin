@@ -1,0 +1,403 @@
+{% extends "layouts/admin.njk" %}
+
+{% block title %}Brands - {{ APP_NAME }}{% endblock %}
+
+{% set pageTitle = "Brands" %}
+{% set breadcrumbActive = "Brands" %}
+{% set currentPage = "brands" %}
+
+{% block content %}
+
+<!-- Brands Table -->
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Brands Management</h5>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary btn-sm" onclick="refreshTable()">
+        <i class="bx bx-refresh"></i> Refresh
+      </button>
+      <a href="/brands/add" class="btn btn-primary btn-sm">
+        <i class="bx bx-plus"></i> Add Brand
+      </a>
+    </div>
+  </div>
+  <div class="card-body">
+    <!-- Filters -->
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <label class="form-label">Status</label>
+        <select class="form-select" id="filterStatus">
+          <option value="">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Featured</label>
+        <select class="form-select" id="filterFeatured">
+          <option value="">All</option>
+          <option value="true">Featured</option>
+          <option value="false">Not Featured</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">&nbsp;</label>
+        <div class="d-grid">
+          <button class="btn btn-outline-primary" onclick="applyFilters()">Filter</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DataTable -->
+    <div class="table-responsive">
+      <table class="table table-hover" id="brandsTable">
+        <thead>
+          <tr>
+            <th>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="selectAll">
+              </div>
+            </th>
+            <th>Brand</th>
+            <th>Order</th>
+            <th>Products</th>
+            <th>Status</th>
+            <th>Featured</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+         
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk Actions Modal -->
+<div class="modal fade" id="bulkActionModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Bulk Actions</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Select an action for <span id="selectedCount">0</span> selected brands:</p>
+        <div class="d-grid gap-2">
+          <button class="btn btn-outline-success" onclick="bulkAction('activate')">
+            <i class="bx bx-check-circle me-1"></i> Activate Selected
+          </button>
+          <button class="btn btn-outline-secondary" onclick="bulkAction('deactivate')">
+            <i class="bx bx-hide me-1"></i> Deactivate Selected
+          </button>
+          <button class="btn btn-outline-warning" onclick="bulkAction('feature')">
+            <i class="bx bx-star me-1"></i> Mark as Featured
+          </button>
+          <button class="btn btn-outline-info" onclick="bulkAction('unfeature')">
+            <i class="bx bx-star me-1"></i> Remove from Featured
+          </button>
+          <button class="btn btn-outline-danger" onclick="bulkAction('delete')">
+            <i class="bx bx-trash me-1"></i> Delete Selected
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block js %}
+
+<script>
+let brandsTable;
+
+document.addEventListener('DOMContentLoaded', function() {
+  initializeDataTable();
+  initializeEventListeners();
+});
+
+function initializeDataTable() {
+  brandsTable = $('#brandsTable').DataTable({
+    processing: true,
+    serverSide: true,
+    layout: {
+        bottomEnd: {
+            paging: {
+                firstLast: false
+            }
+        }
+    },
+    scrollCollapse: true,
+    scrollY: '300px',
+    ajax: {
+      url: '/brands/datatable',
+      type: 'POST',
+      data: function(d) {
+        d.status = $('#filterStatus').val();
+        d.featured = $('#filterFeatured').val();
+      }
+    },
+    columns: [
+      { 
+        data: '_id', 
+        name: '_id', 
+        orderable: false, 
+        searchable: false,
+        render: function(data, type, row) {
+            return `<input type="checkbox" class="row-checkbox" value="${data}">`;
+        }
+      },
+      { 
+        data: 'name', 
+        name: 'name',
+        render: function(data, type, row) {
+            const logoHtml = row.logo ? 
+                `<div class="avatar avatar-sm me-3"><img src="${row.logo}" alt="${data}" class="rounded"></div>` : 
+                `<div class="avatar avatar-sm me-3"><span class="avatar-initial rounded bg-label-primary">${data.charAt(0).toUpperCase()}</span></div>`;
+            
+            return `<div class="d-flex align-items-center">
+                    ${logoHtml}
+                    <div>
+                        <h6 class="mb-0">${data}</h6>
+                        <small class="text-muted">${row.slug}</small>
+                    </div>
+                   </div>`;
+        }
+      },
+      { data: 'sortOrder', name: 'sortOrder' },
+      { 
+        data: 'productsCount', 
+        name: 'productsCount',
+        render: function(data) {
+            return `<span class="badge bg-label-info">${data || 0} Products</span>`;
+        }
+      },
+      { 
+        data: 'isActive', 
+        name: 'isActive',
+        render: function(data) {
+            return data ? 
+                '<span class="badge bg-label-success">Active</span>' : 
+                '<span class="badge bg-label-secondary">Inactive</span>';
+        }
+      },
+      { 
+        data: 'isFeatured', 
+        name: 'isFeatured',
+        render: function(data) {
+            return data ? 
+                '<i class="bx bx-star text-warning"></i>' : 
+                '<i class="bx bx-star text-muted"></i>';
+        }
+      },
+      { 
+        data: 'createdAt', 
+        name: 'createdAt',
+        render: function(data) {
+            return new Date(data).toLocaleDateString();
+        }
+      },
+      { 
+        data: null, 
+        orderable: false, 
+        searchable: false,
+        render: function(data, type, row) {
+            return `<div class="dropdown">
+                        <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="/brands/${row._id}/edit"><i class="bx bx-edit-alt me-1"></i> Edit</a>
+                            <a class="dropdown-item" href="/brands/${row._id}/view"><i class="bx bx-box me-1"></i> View </a>
+                            <a class="dropdown-item" href="javascript:void(0);" onclick="toggleStatus('${row._id}', ${!row.isActive})"><i class="bx ${row.isActive ? 'bx-hide' : 'bx-show'} me-1"></i> ${row.isActive ? 'Deactivate' : 'Activate'}</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteBrand('${row._id}', '${row.name}')"><i class="bx bx-trash me-1"></i> Delete</a>
+                        </div>
+                      </div>`;
+        }
+      }
+    ],
+    order: [[5, 'desc']],
+    pageLength: 25,
+    responsive: true,
+    dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+  });
+}
+
+function initializeEventListeners() {
+  // Select all functionality
+  $('#selectAll').on('change', function() {
+    $('.row-checkbox').prop('checked', $(this).prop('checked'));
+    updateBulkActionButton();
+  });
+
+  // Individual checkbox change
+  $(document).on('change', '.row-checkbox', function() {
+    updateBulkActionButton();
+  });
+
+  // Update select all based on individual checkboxes
+  $(document).on('change', '.row-checkbox', function() {
+    const totalCheckboxes = $('.row-checkbox').length;
+    const checkedCheckboxes = $('.row-checkbox:checked').length;
+    
+    $('#selectAll').prop('indeterminate', checkedCheckboxes > 0 && checkedCheckboxes < totalCheckboxes);
+    $('#selectAll').prop('checked', checkedCheckboxes === totalCheckboxes);
+  });
+}
+
+function updateBulkActionButton() {
+  const selectedCount = $('.row-checkbox:checked').length;
+  $('#selectedCount').text(selectedCount);
+  
+  if (selectedCount > 0) {
+    if (!$('#bulkActionBtn').length) {
+      $('.card-header .d-flex').prepend(`
+        <button id="bulkActionBtn" class="btn btn-outline-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#bulkActionModal">
+          <i class="bx bx-check-square"></i> Actions (${selectedCount})
+        </button>
+      `);
+    } else {
+      $('#bulkActionBtn').html(`<i class="bx bx-check-square"></i> Actions (${selectedCount})`);
+    }
+  } else {
+    $('#bulkActionBtn').remove();
+  }
+}
+
+function applyFilters() {
+  brandsTable.ajax.reload();
+}
+
+function refreshTable() {
+  brandsTable.ajax.reload();
+}
+
+function toggleStatus(brandId, newStatus) {
+  const action = newStatus ? 'activate' : 'deactivate';
+  Swal.fire({
+    title: `${action.charAt(0).toUpperCase() + action.slice(1)} Brand?`,
+    text: `Are you sure you want to ${action} this brand?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: `Yes, ${action}!`,
+    cancelButtonText: 'Cancel'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch(`/brands/${brandId}/toggle-status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ isActive: newStatus })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status) {
+          Swal.fire('Success!', data.message, 'success');
+          brandsTable.ajax.reload();
+        } else {
+          Swal.fire('Error!', data.message, 'error');
+        }
+      })
+      .catch(error => {
+        Swal.fire('Error!', 'Something went wrong', 'error');
+      });
+    }
+  });
+}
+
+function deleteBrand(brandId, brandName) {
+  Swal.fire({
+    title: 'Delete Brand?',
+    text: `Are you sure you want to delete "${brandName}"? This action cannot be undone.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, delete it!',
+    cancelButtonText: 'Cancel',
+    confirmButtonColor: '#d33'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch(`/brands/${brandId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status) {
+          Swal.fire('Deleted!', data.message, 'success');
+          brandsTable.ajax.reload();
+        } else {
+          Swal.fire('Error!', data.message, 'error');
+        }
+      })
+      .catch(error => {
+        Swal.fire('Error!', 'Something went wrong', 'error');
+      });
+    }
+  });
+}
+
+function bulkAction(action) {
+  const selectedIds = $('.row-checkbox:checked').map(function() {
+    return $(this).val();
+  }).get();
+
+  if (selectedIds.length === 0) {
+    Swal.fire('Warning!', 'Please select at least one brand', 'warning');
+    return;
+  }
+
+  const actionText = {
+    activate: 'activate',
+    deactivate: 'deactivate', 
+    feature: 'mark as featured',
+    unfeature: 'remove from featured',
+    delete: 'delete'
+  };
+   $('#bulkActionModal').modal('hide');
+
+  Swal.fire({
+    title: `${actionText[action].charAt(0).toUpperCase() + actionText[action].slice(1)} Brands?`,
+    text: `Are you sure you want to ${actionText[action]} ${selectedIds.length} selected brands?`,
+    icon: action === 'delete' ? 'warning' : 'question',
+    showCancelButton: true,
+    confirmButtonText: `Yes, ${action}!`,
+    cancelButtonText: 'Cancel',
+    confirmButtonColor: action === 'delete' ? '#d33' : '#696cff'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch('/brands/bulk-action', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+          action: action,
+          brandIds: selectedIds
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status) {
+          Swal.fire('Success!', data.message, 'success');
+          brandsTable.ajax.reload();
+          $('#bulkActionModal').modal('hide');
+          $('.row-checkbox').prop('checked', false);
+          $('#selectAll').prop('checked', false);
+          updateBulkActionButton();
+        } else {
+          Swal.fire('Error!', data.message, 'error');
+        }
+      })
+      .catch(error => {
+        Swal.fire('Error!', 'Something went wrong', 'error');
+      });
+    }
+  });
+}
+</script>
+{% endblock %}

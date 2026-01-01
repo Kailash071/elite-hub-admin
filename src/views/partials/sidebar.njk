@@ -1,0 +1,156 @@
+<!-- Menu -->
+<aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+  <div class="app-brand demo">
+    <a href="/dashboard" class="app-brand-link">
+      <span class="app-brand-logo demo"> </span>
+      <span class="app-brand-text demo menu-text fw-bolder ms-2">Electronic</span>
+    </a>
+
+    <a
+      href="javascript:void(0);"
+      class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none"
+    >
+      <i class="bx bx-chevron-left bx-sm align-middle"></i>
+    </a>
+  </div>
+
+  <div class="menu-inner-shadow"></div>
+
+  <ul class="menu-inner py-1">
+    <!-- Dashboard -->
+    <li class="menu-item {{ 'active' if currentPage == 'dashboard' }}">
+      <a href="/" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-home-circle"></i>
+        <div data-i18n="Analytics">Dashboard</div>
+      </a>
+    </li>
+
+    <li class="menu-header small text-uppercase">
+      <span class="menu-header-text">E-commerce</span>
+    </li>
+
+    <!-- Products -->
+    <li class="menu-item {{ 'active' if currentPage == 'products' }}">
+      <a href="/products" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-box"></i>
+        <div data-i18n="Products">Products</div>
+      </a>
+    </li>
+
+    <!-- Categories -->
+    <li class="menu-item {{ 'active' if currentPage == 'categories' }}">
+      <a href="/categories" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-category"></i>
+        <div data-i18n="Categories">Categories</div>
+      </a>
+    </li>
+
+    <!-- Brands -->
+    <li class="menu-item {{ 'active' if currentPage == 'brands' }}">
+      <a href="/brands" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-award"></i>
+        <div data-i18n="Brands">Brands</div>
+      </a>
+    </li>
+
+    <!-- Orders -->
+    <li class="menu-item {{ 'active' if currentPage == 'orders' }}">
+      <a href="/orders" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-receipt"></i>
+        <div data-i18n="Orders">Orders</div>
+      </a>
+    </li>
+
+    <!-- Customers -->
+    <li class="menu-item {{ 'active' if currentPage == 'customers' }}">
+      <a href="/customers" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-user"></i>
+        <div data-i18n="Customers">Customers</div>
+      </a>
+    </li>
+
+    <!-- Coupons -->
+    <li class="menu-item {{ 'active' if currentPage == 'coupons' }}">
+      <a href="/coupons" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-purchase-tag"></i>
+        <div data-i18n="Coupons">Coupons</div>
+      </a>
+    </li>
+
+    <li class="menu-header small text-uppercase">
+      <span class="menu-header-text">Content</span>
+    </li>
+
+    <!-- Banners -->
+    <li class="menu-item {{ 'active' if currentPage == 'banners' }}">
+      <a href="/banners" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-image"></i>
+        <div data-i18n="Banners">Banners</div>
+      </a>
+    </li>
+
+    <!-- Reviews -->
+    <li class="menu-item {{ 'active' if currentPage == 'reviews' }}">
+      <a href="/reviews" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-star"></i>
+        <div data-i18n="Reviews">Reviews</div>
+      </a>
+    </li>
+
+    <li class="menu-header small text-uppercase">
+      <span class="menu-header-text">Analytics</span>
+    </li>
+
+    <!-- Analytics -->
+    <li class="menu-item {{ 'active' if currentPage == 'analytics' }}">
+      <a href="/analytics" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-line-chart"></i>
+        <div data-i18n="Analytics">Analytics</div>
+      </a>
+    </li>
+
+    <!-- Reports -->
+    <li class="menu-item {{ 'active' if currentPage == 'reports' }}">
+      <a href="/reports" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-file"></i>
+        <div data-i18n="Reports">Reports</div>
+      </a>
+    </li>
+
+    <li class="menu-header small text-uppercase">
+      <span class="menu-header-text">System</span>
+    </li>
+
+    <!-- Settings -->
+    <li class="menu-item {{ 'active' if currentPage == 'settings' }}">
+      <a href="/settings" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-cog"></i>
+        <div data-i18n="Settings">Settings</div>
+      </a>
+    </li>
+
+    <!-- Admin Users -->
+    <li class="menu-item {{ 'active' if currentPage == 'admins' }}">
+      <a href="/admins" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-user-circle"></i>
+        <div data-i18n="Admin Users">Admin Users</div>
+      </a>
+    </li>
+
+    <!-- Roles -->
+    <li class="menu-item {{ 'active' if currentPage == 'roles' }}">
+      <a href="/roles" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-shield-quarter"></i>
+        <div data-i18n="Roles">Roles</div>
+      </a>
+    </li>
+
+    <!-- Permissions -->
+    <li class="menu-item {{ 'active' if currentPage == 'permissions' }}">
+      <a href="/permissions" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-key"></i>
+        <div data-i18n="Permissions">Permissions</div>
+      </a>
+    </li>
+  </ul>
+</aside>
