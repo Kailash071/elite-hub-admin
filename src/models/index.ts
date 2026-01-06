@@ -22,6 +22,8 @@ export { Coupon } from './Coupon.js';
 export { Brand } from './Brand.js';
 export { Banner } from './Banner.js';
 export { Setting } from './Setting.js';
+export { Cms } from './Cms.js';
+export { Faq } from './Faq.js';
 
 // Type exports for better TypeScript support
 export type { ICustomer, ICustomerAddress } from './Customer.js';
@@ -38,3 +40,5 @@ export type { ICoupon } from './Coupon.js';
 export type { IBrand } from './Brand.js';
 export type { IBanner } from './Banner.js';
 export type { ISetting } from './Setting.js';
+export type { ICms } from './Cms.js';
+export type { IFaq } from './Faq.js';
