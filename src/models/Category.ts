@@ -2,23 +2,33 @@ import { Schema, model, Document, Types } from 'mongoose';
 
 export interface ICategory extends Document {
   name: string;
+  displayName: string;
   slug: string;
   description?: string;
   image?: string;
+  mainCategory?: Types.ObjectId | ICategory;
+  mainCategoryName?: string;
   parentCategory?: Types.ObjectId | ICategory;
-  level: number; // 0 = main category, 1 = subcategory, 2 = sub-subcategory
+  parentCategoryName?: string;
+  level: number; // 0 subcategory, 1 sub-subcategory
   isActive: boolean;
   sortOrder: number;
   seoTitle?: string;
   seoDescription?: string;
   seoKeywords?: string[];
-  attributes?: Types.ObjectId[]; // Reference to Attribute model
   createdAt: Date;
   updatedAt: Date;
+  isDeleted: Boolean;
 }
 
 const categorySchema = new Schema<ICategory>({
   name: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: 100
+  },
+  displayName: {
     type: String,
     required: true,
     trim: true,
@@ -38,12 +48,29 @@ const categorySchema = new Schema<ICategory>({
     maxlength: 1000
   },
   image: {
-    type: String, // URL to category image
+    type: String,
     trim: true
+  },
+  mainCategory: {
+    type: Schema.Types.ObjectId,
+    ref: 'MainCategory',
+    default: null
+  },
+  mainCategoryName: {
+    type: String,
+    trim: true,
+    maxlength: 100,
+    default: null
   },
   parentCategory: {
     type: Schema.Types.ObjectId,
     ref: 'Category',
+    default: null
+  },
+  parentCategoryName: {
+    type: String,
+    trim: true,
+    maxlength: 100,
     default: null
   },
   level: {
@@ -73,10 +100,10 @@ const categorySchema = new Schema<ICategory>({
     type: String,
     trim: true
   }],
-  attributes: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Attribute'
-  }]
+  isDeleted: {
+    type: Boolean,
+    default: false
+  }
 }, {
   timestamps: true
 });
@@ -88,19 +115,5 @@ categorySchema.index({ level: 1 });
 categorySchema.index({ isActive: 1 });
 categorySchema.index({ sortOrder: 1 });
 
-// Virtual for getting subcategories
-categorySchema.virtual('subcategories', {
-  ref: 'Category',
-  localField: '_id',
-  foreignField: 'parentCategory'
-});
-
-// Virtual for getting products count
-categorySchema.virtual('productsCount', {
-  ref: 'Product',
-  localField: '_id',
-  foreignField: 'category',
-  count: true
-});
 
 export const Category = model<ICategory>('Category', categorySchema);

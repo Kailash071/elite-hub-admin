@@ -1,48 +1,30 @@
 {% extends "layouts/admin.njk" %}
 
-{% block title %}Categories - {{ APP_NAME }}{% endblock %}
+{% block title %}Main Categories - {{ APP_NAME }}{% endblock %}
 
-{% set pageTitle = "Categories" %}
-{% set breadcrumbActive = "Categories" %}
+{% set pageTitle = "Main Categories" %}
+{% set breadcrumbActive = "Main Categories" %}
 {% set currentPage = "categories" %}
 
 {% block content %}
 
-<!-- Categories Table -->
+<!-- Main Categories Table -->
 <div class="card">
   <div class="card-header d-flex justify-content-between align-items-center">
-    <h5 class="mb-0">Categories Management</h5>
+    <h5 class="mb-0">Main Categories Management</h5>
     <div class="d-flex gap-2">
       <button class="btn btn-outline-secondary btn-sm" onclick="refreshTable()">
         <i class="bx bx-refresh"></i> Refresh
       </button>
-      <a href="/categories/add" class="btn btn-primary btn-sm">
-        <i class="bx bx-plus"></i> Add Category
+      <a href="/categories/main/add" class="btn btn-primary btn-sm">
+        <i class="bx bx-plus"></i> Add Main Category
       </a>
     </div>
   </div>
   <div class="card-body">
     <!-- Filters -->
     <div class="row mb-3">
-      <div class="col-md-3">
-        <label class="form-label">Main Category</label>
-        <select class="form-select" id="filterMainCategory">
-          <option value="">All Main Categories</option>
-          {% for mainRequest in mainCategories %}
-            <option value="{{ mainRequest._id }}">{{ mainRequest.name }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-md-3">
-        <label class="form-label">Parent Category</label>
-        <select class="form-select" id="filterParentCategory">
-          <option value="">All Parent Categories</option>
-           {% for parent in parentCategories %}
-            <option value="{{ parent._id }}">{{ parent.name }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-md-3">
+      <div class="col-md-4">
         <label class="form-label">Status</label>
         <select class="form-select" id="filterStatus">
           <option value="">All Status</option>
@@ -50,10 +32,9 @@
           <option value="inactive">Inactive</option>
         </select>
       </div>
-      <div class="col-md-3 text-end">
+      <div class="col-md-8 text-end">
           <label class="form-label">&nbsp;</label>
-          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-            <button class="btn btn-outline-secondary" onclick="resetFilters()">Reset</button>
+          <div>
             <button class="btn btn-outline-primary" onclick="applyFilters()">Filter</button>
           </div>
       </div>
@@ -61,7 +42,7 @@
 
     <!-- DataTable -->
     <div class="table-responsive">
-      <table class="table table-hover" id="categoriesTable">
+      <table class="table table-hover" id="mainCategoriesTable">
         <thead>
           <tr>
             <th>
@@ -70,8 +51,8 @@
               </div>
             </th>
             <th>Name</th>
-            <th>Main Category</th>
-            <th>Parent Category</th>
+            <th>Type</th>
+            <th>Slug</th>
             <th>Status</th>
             <th>Order</th>
             <th>Created</th>
@@ -116,7 +97,7 @@
 {% block js %}
 
 <script>
-let categoriesTable;
+let mainCategoriesTable;
 
 document.addEventListener('DOMContentLoaded', function() {
   initializeDataTable();
@@ -124,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeDataTable() {
-  categoriesTable = $('#categoriesTable').DataTable({
+  mainCategoriesTable = $('#mainCategoriesTable').DataTable({
     processing: true,
     serverSide: true,
     layout: {
@@ -137,12 +118,10 @@ function initializeDataTable() {
     scrollCollapse: true,
     scrollY: '300px',
     ajax: {
-      url: '/categories/datatable',
+      url: '/categories/main/datatable',
       type: 'POST',
       data: function(d) {
         d.status = $('#filterStatus').val();
-        d.mainCategoryId = $('#filterMainCategory').val();
-        d.parentCategoryId = $('#filterParentCategory').val();
       }
     },
     columns: [
@@ -159,28 +138,26 @@ function initializeDataTable() {
         data: 'name', 
         name: 'name',
         render: function(data, type, row) {
+            const imageHtml = row.image ? 
+                `<div class="avatar avatar-sm me-3"><img src="${row.image}" alt="${data}" class="rounded"></div>` : 
+                `<div class="avatar avatar-sm me-3"><span class="avatar-initial rounded bg-label-primary">${data.charAt(0).toUpperCase()}</span></div>`;
+            
             return `<div class="d-flex align-items-center">
+                    ${imageHtml}
                     <div>
                         <h6 class="mb-0">${data}</h6>
-                        <small class="text-muted">${row.slug}</small>
                     </div>
                    </div>`;
         }
       },
-      { 
-          data: 'mainCategoryName', 
-          name: 'mainCategoryName',
-          render: function(data) {
-              return data ? `<span class="badge bg-label-info">${data}</span>` : '-';
-          }
+       { 
+        data: null, 
+        name: 'type',
+        render: function(data) {
+            return `<span class="badge bg-label-primary">Main Category</span>`;
+        }
       },
-      { 
-          data: 'parentCategoryName', 
-          name: 'parentCategoryName',
-          render: function(data) {
-              return data ? `<span class="text-secondary">${data}</span>` : '-';
-          }
-      },
+      { data: 'slug', name: 'slug' },
       { 
         data: 'isActive', 
         name: 'isActive',
@@ -206,10 +183,10 @@ function initializeDataTable() {
             return `<div class="dropdown">
                         <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="bx bx-dots-vertical-rounded"></i></button>
                         <div class="dropdown-menu">
-                            <a class="dropdown-item" href="/categories/${row._id}/edit"><i class="bx bx-edit-alt me-1"></i> Edit</a>
+                            <a class="dropdown-item" href="/categories/main/${row._id}/edit"><i class="bx bx-edit-alt me-1"></i> Edit</a>
                             <a class="dropdown-item" href="javascript:void(0);" onclick="toggleStatus('${row._id}', ${!row.isActive})"><i class="bx ${row.isActive ? 'bx-hide' : 'bx-show'} me-1"></i> ${row.isActive ? 'Deactivate' : 'Activate'}</a>
                             <div class="dropdown-divider"></div>
-                            <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteCategory('${row._id}', '${row.name}')"><i class="bx bx-trash me-1"></i> Delete</a>
+                            <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteMainCategory('${row._id}', '${row.name}')"><i class="bx bx-trash me-1"></i> Delete</a>
                         </div>
                       </div>`;
         }
@@ -264,18 +241,11 @@ function updateBulkActionButton() {
 }
 
 function applyFilters() {
-  categoriesTable.ajax.reload();
+  mainCategoriesTable.ajax.reload();
 }
 
 function refreshTable() {
-  categoriesTable.ajax.reload();
-}
-
-function resetFilters() {
-  $('#filterMainCategory').val('');
-  $('#filterParentCategory').val('');
-  $('#filterStatus').val('');
-  categoriesTable.ajax.reload();
+  mainCategoriesTable.ajax.reload();
 }
 
 function toggleStatus(id, newStatus) {
@@ -289,7 +259,7 @@ function toggleStatus(id, newStatus) {
     cancelButtonText: 'Cancel'
   }).then((result) => {
     if (result.isConfirmed) {
-      fetch(`/categories/${id}/toggle-status`, {
+      fetch(`/categories/main/${id}/toggle-status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -300,7 +270,7 @@ function toggleStatus(id, newStatus) {
       .then(data => {
         if (data.status) {
           Swal.fire('Success!', data.message, 'success');
-          categoriesTable.ajax.reload();
+          mainCategoriesTable.ajax.reload();
         } else {
           Swal.fire('Error!', data.message, 'error');
         }
@@ -312,7 +282,7 @@ function toggleStatus(id, newStatus) {
   });
 }
 
-function deleteCategory(id, name) {
+function deleteMainCategory(id, name) {
   Swal.fire({
     title: 'Delete Category?',
     text: `Are you sure you want to delete "${name}"? This action cannot be undone.`,
@@ -323,7 +293,7 @@ function deleteCategory(id, name) {
     confirmButtonColor: '#d33'
   }).then((result) => {
     if (result.isConfirmed) {
-      fetch(`/categories/${id}`, {
+      fetch(`/categories/main/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -333,7 +303,7 @@ function deleteCategory(id, name) {
       .then(data => {
         if (data.status) {
           Swal.fire('Deleted!', data.message, 'success');
-          categoriesTable.ajax.reload();
+          mainCategoriesTable.ajax.reload();
         } else {
           Swal.fire('Error!', data.message, 'error');
         }
@@ -372,10 +342,11 @@ function bulkAction(action) {
     confirmButtonColor: action === 'delete' ? '#d33' : '#696cff'
   }).then((result) => {
     if (result.isConfirmed) {
-      fetch('/categories/bulk-action', {
+      fetch('/categories/main/bulk-action', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
         },
         body: JSON.stringify({
           action: action,
@@ -386,7 +357,7 @@ function bulkAction(action) {
       .then(data => {
         if (data.status) {
           Swal.fire('Success!', data.message, 'success');
-          categoriesTable.ajax.reload();
+          mainCategoriesTable.ajax.reload();
           $('#bulkActionModal').modal('hide');
           $('.row-checkbox').prop('checked', false);
           $('#selectAll').prop('checked', false);

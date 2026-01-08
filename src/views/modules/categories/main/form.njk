@@ -1,16 +1,16 @@
 {% extends "layouts/admin.njk" %}
 
-{% block title %}{{ 'Edit Category' if category else 'Add Category' }} - {{ APP_NAME }}{% endblock %}
+{% block title %}{{ 'Edit Main Category' if mainCategory else 'Add Main Category' }} - {{ APP_NAME }}{% endblock %}
 
-{% set pageTitle = 'Edit Category' if category else 'Add Category' %}
-{% set breadcrumbSection = "Categories" %}
-{% set breadcrumbSectionUrl = "/categories" %}
-{% set breadcrumbActive = 'Edit Category' if category else 'Add Category' %}
+{% set pageTitle = 'Edit Main Category' if mainCategory else 'Add Main Category' %}
+{% set breadcrumbSection = "Main Categories" %}
+{% set breadcrumbSectionUrl = "/categories/main" %}
+{% set breadcrumbActive = 'Edit Main Category' if mainCategory else 'Add Main Category' %}
 {% set currentPage = "categories" %}
 
 {% block content %}
-<form id="categoryForm" action="{{ '/categories/' + category._id if category else '/categories' }}" method="POST" enctype="multipart/form-data">
-    {% if category %}
+<form id="mainCategoryForm" action="{{ '/categories/main/' + mainCategory._id if mainCategory else '/categories/main' }}" method="POST" enctype="multipart/form-data">
+    {% if mainCategory %}
     <input type="hidden" name="_method" value="PUT">
     {% endif %}
     
@@ -19,39 +19,10 @@
         <div class="col-lg-8">
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="mb-0">Category Information</h5>
+                    <h5 class="mb-0">Main Category Information</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
-
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label" for="mainCategory">Main Category <span class="text-danger">*</span></label>
-                                <select class="form-select" id="mainCategory" name="mainCategory" required>
-                                    <option value="">Select Main Category</option>
-                                    {% for main in mainCategories %}
-                                        <option value="{{ main._id }}" {{ 'selected' if (category and category.mainCategory and category.mainCategory | string == main._id | string) or (formData.mainCategory == main._id) }}>{{ main.name }}</option>
-                                    {% endfor %}
-                                </select>
-                                <div class="invalid-feedback"></div>
-                            </div>
-                        </div>
-
-                         <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label" for="parentCategory">Parent Category</label>
-                                <select class="form-select" id="parentCategory" name="parentCategory">
-                                    <option value="">None (Top Level)</option>
-                                    {% if parentCategories %}
-                                        {% for parent in parentCategories %}
-                                            <option value="{{ parent._id }}" {{ 'selected' if (category and category.parentCategory and category.parentCategory | string == parent._id | string) or (formData.parentCategory == parent._id) }}>{{ parent.name }}</option>
-                                        {% endfor %}
-                                    {% endif %}
-                                </select>
-                                <div class="form-text">Select only if this is a sub-subcategory</div>
-                            </div>
-                        </div>
-
                         <div class="col-12">
                             <div class="mb-3">
                                 <label class="form-label" for="name">Name <span class="text-danger">*</span></label>
@@ -60,21 +31,7 @@
                                        id="name"
                                        name="name" 
                                        placeholder="Enter category name"
-                                       value="{{ category.name if category else formData.name or '' }}"
-                                       required>
-                                <div class="invalid-feedback"></div>
-                            </div>
-                        </div>
-
-                         <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label" for="displayName">Display Name <span class="text-danger">*</span></label>
-                                <input type="text" 
-                                       class="form-control" 
-                                       id="displayName"
-                                       name="displayName" 
-                                       placeholder="Enter category display name"
-                                       value="{{ category.displayName if category else formData.displayName or '' }}"
+                                       value="{{ mainCategory.name if mainCategory else formData.name or '' }}"
                                        required>
                                 <div class="invalid-feedback"></div>
                             </div>
@@ -88,10 +45,24 @@
                                        id="slug"
                                        name="slug" 
                                        placeholder="category-slug"
-                                       value="{{ category.slug if category else formData.slug or '' }}"
+                                       value="{{ mainCategory.slug if mainCategory else formData.slug or '' }}"
                                        required>
                                 <div class="invalid-feedback"></div>
                                 <div class="form-text">URL friendly version of the name</div>
+                            </div>
+                        </div>
+
+                         <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label" for="displayName">Display Name <span class="text-danger">*</span></label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="displayName"
+                                       name="displayName" 
+                                       placeholder="Display Name"
+                                       value="{{ mainCategory.displayName if mainCategory else formData.displayName or '' }}"
+                                       required>
+                                <div class="invalid-feedback"></div>
                             </div>
                         </div>
                         
@@ -102,7 +73,7 @@
                                           id="description"
                                           name="description" 
                                           rows="4"
-                                          placeholder="Enter category description">{{ category.description if category else formData.description or '' }}</textarea>
+                                          placeholder="Enter category description">{{ mainCategory.description if mainCategory else formData.description or '' }}</textarea>
                                 <div class="invalid-feedback"></div>
                                 <div class="form-text">Maximum 1000 characters</div>
                             </div>
@@ -124,7 +95,7 @@
                                id="seoTitle"
                                name="seoTitle" 
                                placeholder="SEO optimized title"
-                               value="{{ category.seoTitle if category else formData.seoTitle or '' }}"
+                               value="{{ mainCategory.seoTitle if mainCategory else formData.seoTitle or '' }}"
                                maxlength="60">
                         <div class="form-text">
                             <span id="seoTitleCount">0</span>/60 characters
@@ -138,7 +109,7 @@
                                   name="seoDescription" 
                                   rows="3"
                                   placeholder="SEO meta description"
-                                  maxlength="160">{{ category.seoDescription if category else formData.seoDescription or '' }}</textarea>
+                                  maxlength="160">{{ mainCategory.seoDescription if mainCategory else formData.seoDescription or '' }}</textarea>
                         <div class="form-text">
                             <span id="seoDescCount">0</span>/160 characters
                         </div>
@@ -151,7 +122,7 @@
                                id="seoKeywords"
                                name="seoKeywords" 
                                placeholder="keyword1, keyword2, keyword3"
-                               value="{% if category and category.seoKeywords %}{{ category.seoKeywords.join(', ') }}{% else %}{{ formData.seoKeywords or '' }}{% endif %}">
+                               value="{% if mainCategory and mainCategory.seoKeywords %}{{ mainCategory.seoKeywords.join(', ') }}{% else %}{{ formData.seoKeywords or '' }}{% endif %}">
                         <div class="form-text">Separate keywords with commas</div>
                     </div>
                 </div>
@@ -177,8 +148,8 @@
                     </div>
                     
                     <div id="imagePreview" class="text-center">
-                        {% if category and category.image %}
-                        <img src="{{ category.image }}" alt="{{ category.name }}" class="img-fluid rounded" style="max-width: 150px;">
+                        {% if mainCategory and mainCategory.image %}
+                        <img src="{{ mainCategory.image }}" alt="{{ mainCategory.name }}" class="img-fluid rounded" style="max-width: 150px;">
                         <div class="mt-2">
                             <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeImage()">
                                 <i class="bx bx-trash"></i> Remove Image
@@ -206,7 +177,7 @@
                                    type="checkbox" 
                                    id="isActive" 
                                    name="isActive"
-                                   {{ 'checked' if (category and category.isActive) or (not category) else '' }}>
+                                   {{ 'checked' if (mainCategory and mainCategory.isActive) or (not mainCategory) else '' }}>
                             <label class="form-check-label" for="isActive">
                                 Active Status
                             </label>
@@ -220,17 +191,15 @@
                                class="form-control" 
                                id="sortOrder"
                                name="sortOrder" 
-                               value="{{ category.sortOrder if category else formData.sortOrder or '0' }}"
-                               min="0"
-                               {{ 'disabled' if not category }}
-                               >
+                               value="{{ mainCategory.sortOrder if mainCategory else formData.sortOrder or '0' }}"
+                               min="0">
                         <div class="form-text">Higher numbers appear last</div>
                     </div>
                 </div>
             </div>
 
             <!-- Additional Information -->
-            {% if category %}
+            {% if mainCategory %}
             <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="mb-0">Information</h5>
@@ -238,11 +207,11 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between mb-2">
                         <span class="text-muted">Created:</span>
-                        <span>{{ category.createdAt | date('MMM DD, YYYY') }}</span>
+                        <span>{{ mainCategory.createdAt | date('MMM DD, YYYY') }}</span>
                     </div>
                     <div class="d-flex justify-content-between">
                         <span class="text-muted">Updated:</span>
-                        <span>{{ category.updatedAt | date('MMM DD, YYYY') }}</span>
+                        <span>{{ mainCategory.updatedAt | date('MMM DD, YYYY') }}</span>
                     </div>
                 </div>
             </div>
@@ -254,14 +223,14 @@
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-primary">
                             <i class="bx bx-save"></i>
-                            {{ 'Update Category' if category else 'Create Category' }}
+                            {{ 'Update Category' if mainCategory else 'Create Category' }}
                         </button>
-                        <a href="/categories" class="btn btn-outline-secondary">
+                        <a href="/categories/main" class="btn btn-outline-secondary">
                             <i class="bx bx-arrow-back"></i>
                             Back to List
                         </a>
-                        {% if category %}
-                        <button type="button" class="btn btn-outline-danger" onclick="deleteCategory('{{ category._id }}', '{{ category.name }}')">
+                        {% if mainCategory %}
+                        <button type="button" class="btn btn-outline-danger" onclick="deleteMainCategory('{{ mainCategory._id }}', '{{ mainCategory.name }}')">
                             <i class="bx bx-trash"></i>
                             Delete Category
                         </button>
@@ -294,7 +263,7 @@ function initializeForm() {
             const slug = generateSlug(this.value);
             slugInput.value = slug;
         }
-         if(!displayNameInput.dataset.manual){
+        if(!displayNameInput.dataset.manual){
              displayNameInput.value = this.value;
         }
     });
@@ -304,9 +273,9 @@ function initializeForm() {
         this.dataset.manual = 'true';
         this.value = generateSlug(this.value);
     });
-
+    
     // Mark displayName as manually edited
-     displayNameInput.addEventListener('input', function() {
+    displayNameInput.addEventListener('input', function() {
         this.dataset.manual = 'true';
     });
 
@@ -316,7 +285,7 @@ function initializeForm() {
 }
 
 function generateSlug(text) {
-    return text?
+    return text
         .toString()
         .toLowerCase()
         .replace(/\s+/g, '-')
@@ -403,14 +372,14 @@ function removeImage() {
                 removeInput.type = 'hidden';
                 removeInput.name = 'removeImage';
                 removeInput.value = 'true';
-                document.getElementById('categoryForm').appendChild(removeInput);
+                document.getElementById('mainCategoryForm').appendChild(removeInput);
             }
         }
     });
 }
 
-{% if category %}
-function deleteCategory(id, name) {
+{% if mainCategory %}
+function deleteMainCategory(id, name) {
     Swal.fire({
         title: 'Delete Category?',
         text: `Are you sure you want to delete "${name}"? This action cannot be undone.`,
@@ -421,7 +390,7 @@ function deleteCategory(id, name) {
         confirmButtonColor: '#d33'
     }).then((result) => {
         if (result.isConfirmed) {
-            fetch(`/categories/${id}`, {
+            fetch(`/categories/main/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
@@ -432,7 +401,7 @@ function deleteCategory(id, name) {
             .then(data => {
                 if (data.status) {
                     Swal.fire('Deleted!', data.message, 'success').then(() => {
-                        window.location.href = '/categories';
+                        window.location.href = '/categories/main';
                     });
                 } else {
                     Swal.fire('Error!', data.message, 'error');

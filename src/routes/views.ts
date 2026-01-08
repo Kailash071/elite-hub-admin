@@ -55,15 +55,14 @@ router.patch('/brands/:id/toggle-status', BrandsController.toggleStatus);
 
 // ===== CATEGORIES ROUTES =====
 router.get('/categories', CategoriesController.index);
+router.post('/categories/datatable', CategoriesController.indexData);
 router.get('/categories/add', CategoriesController.create);
 router.post('/categories', CategoriesController.store);
-router.get('/categories/:id/edit', CategoriesController.edit);
-router.put('/categories/:id', CategoriesController.update);
-router.delete('/categories/:id', CategoriesController.destroy);
-router.get('/categories/tree', CategoriesController.tree);
-router.post('/categories/datatable', CategoriesController.datatable);
-router.patch('/categories/:id/toggle-status', CategoriesController.toggleStatus);
 router.post('/categories/bulk-action', CategoriesController.bulkAction);
+router.get('/categories/:id/edit', CategoriesController.edit);
+router.post('/categories/:id', CategoriesController.update);
+router.delete('/categories/:id', CategoriesController.destroy);
+router.patch('/categories/:id/toggle-status', CategoriesController.toggleStatus);
 
 // ===== CUSTOMERS ROUTES =====
 router.get('/customers', CustomersController.index);
@@ -117,10 +116,6 @@ router.get('/analytics', AdminController.showAnalytics);
 router.get('/reports', AdminController.showReports);
 
 
-// ===== ADDITIONAL BRAND ROUTES =====
-
-// ===== ADDITIONAL CATEGORY ROUTES =====
-router.get('/categories/:id/products', CategoriesController.showProducts);
 
 // ===== ADDITIONAL CUSTOMER ROUTES =====
 router.get('/customers/:id/orders', CustomersController.showOrders);
