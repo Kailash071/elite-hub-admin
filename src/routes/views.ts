@@ -9,6 +9,8 @@ import * as CategoriesController from '../controllers/CategoriesController.js';
 import * as CustomersController from '../controllers/CustomersController.js';
 import * as OrdersController from '../controllers/OrdersController.js';
 import * as CouponsController from '../controllers/CouponsController.js';
+import * as CmsController from '../controllers/CmsController.js';
+import * as FaqController from '../controllers/FaqController.js';
 import { authenticateSessionAdmin, checkAlreadyLoggedIn } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -115,6 +117,27 @@ router.get('/permissions', AdminController.showPermissions);
 router.get('/analytics', AdminController.showAnalytics);
 router.get('/reports', AdminController.showReports);
 
+// ===== CMS ROUTES =====
+router.get('/cms', CmsController.index);
+router.get('/cms/add', CmsController.create);
+router.post('/cms', CmsController.store);
+router.post('/cms/datatable', CmsController.indexData);
+router.post('/cms/bulk-action', CmsController.bulkAction);
+router.get('/cms/:id/edit', CmsController.edit);
+router.post('/cms/:id', CmsController.update);
+router.delete('/cms/:id', CmsController.destroy);
+router.patch('/cms/:id/toggle-status', CmsController.toggleStatus);
+
+// ===== FAQ ROUTES =====
+router.get('/faqs', FaqController.index);
+router.get('/faqs/add', FaqController.create);
+router.post('/faqs', FaqController.store);
+router.post('/faqs/datatable', FaqController.indexData);
+router.post('/faqs/bulk-action', FaqController.bulkAction);
+router.get('/faqs/:id/edit', FaqController.edit);
+router.post('/faqs/:id', FaqController.update);
+router.delete('/faqs/:id', FaqController.destroy);
+router.patch('/faqs/:id/toggle-status', FaqController.toggleStatus);
 
 
 // ===== ADDITIONAL CUSTOMER ROUTES =====

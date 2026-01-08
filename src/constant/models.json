@@ -5,7 +5,9 @@
       "slug": "dashboard-access",
       "description": "View dashboard and analytics overview",
       "module": "dashboard",
-      "operations": ["view"],
+      "operations": [
+        "view"
+      ],
       "category": "System",
       "icon": "dashboard",
       "isSystemPermission": true
@@ -15,7 +17,14 @@
       "slug": "products-full-access",
       "description": "Full access to products - view, add, edit, delete",
       "module": "products",
-      "operations": ["view", "add", "edit", "delete", "export", "import"],
+      "operations": [
+        "view",
+        "add",
+        "edit",
+        "delete",
+        "export",
+        "import"
+      ],
       "category": "E-commerce",
       "icon": "inventory",
       "isSystemPermission": true
@@ -25,7 +34,9 @@
       "slug": "products-view-only",
       "description": "View products only",
       "module": "products",
-      "operations": ["view"],
+      "operations": [
+        "view"
+      ],
       "category": "E-commerce",
       "icon": "visibility",
       "isSystemPermission": true
@@ -35,7 +46,12 @@
       "slug": "categories-full-access",
       "description": "Full access to categories - view, add, edit, delete",
       "module": "categories",
-      "operations": ["view", "add", "edit", "delete"],
+      "operations": [
+        "view",
+        "add",
+        "edit",
+        "delete"
+      ],
       "category": "E-commerce",
       "icon": "category",
       "isSystemPermission": true
@@ -45,7 +61,12 @@
       "slug": "brands-full-access",
       "description": "Full access to brands - view, add, edit, delete",
       "module": "brands",
-      "operations": ["view", "add", "edit", "delete"],
+      "operations": [
+        "view",
+        "add",
+        "edit",
+        "delete"
+      ],
       "category": "E-commerce",
       "icon": "brand",
       "isSystemPermission": true
@@ -55,7 +76,13 @@
       "slug": "customers-full-access",
       "description": "Full access to customers - view, add, edit, delete",
       "module": "customers",
-      "operations": ["view", "add", "edit", "delete", "export"],
+      "operations": [
+        "view",
+        "add",
+        "edit",
+        "delete",
+        "export"
+      ],
       "category": "User Management",
       "icon": "people",
       "isSystemPermission": true
@@ -65,7 +92,9 @@
       "slug": "customers-view-only",
       "description": "View customers only",
       "module": "customers",
-      "operations": ["view"],
+      "operations": [
+        "view"
+      ],
       "category": "User Management",
       "icon": "visibility",
       "isSystemPermission": true
@@ -75,7 +104,12 @@
       "slug": "orders-full-access",
       "description": "Full access to orders - view, edit, delete, export",
       "module": "orders",
-      "operations": ["view", "edit", "delete", "export"],
+      "operations": [
+        "view",
+        "edit",
+        "delete",
+        "export"
+      ],
       "category": "E-commerce",
       "icon": "receipt",
       "isSystemPermission": true
@@ -85,7 +119,9 @@
       "slug": "orders-view-only",
       "description": "View orders only",
       "module": "orders",
-      "operations": ["view"],
+      "operations": [
+        "view"
+      ],
       "category": "E-commerce",
       "icon": "visibility",
       "isSystemPermission": true
@@ -95,7 +131,11 @@
       "slug": "reviews-full-access",
       "description": "Full access to reviews - view, edit, delete",
       "module": "reviews",
-      "operations": ["view", "edit", "delete"],
+      "operations": [
+        "view",
+        "edit",
+        "delete"
+      ],
       "category": "Content",
       "icon": "star",
       "isSystemPermission": true
@@ -105,7 +145,12 @@
       "slug": "coupons-full-access",
       "description": "Full access to coupons - view, add, edit, delete",
       "module": "coupons",
-      "operations": ["view", "add", "edit", "delete"],
+      "operations": [
+        "view",
+        "add",
+        "edit",
+        "delete"
+      ],
       "category": "E-commerce",
       "icon": "discount",
       "isSystemPermission": true
@@ -115,9 +160,44 @@
       "slug": "banners-full-access",
       "description": "Full access to banners - view, add, edit, delete",
       "module": "banners",
-      "operations": ["view", "add", "edit", "delete"],
+      "operations": [
+        "view",
+        "add",
+        "edit",
+        "delete"
+      ],
       "category": "Content",
       "icon": "image",
+      "isSystemPermission": true
+    },
+    {
+      "name": "CMS Management",
+      "slug": "cms-full-access",
+      "description": "Full access to CMS pages - view, add, edit, delete",
+      "module": "cms",
+      "operations": [
+        "view",
+        "add",
+        "edit",
+        "delete"
+      ],
+      "category": "Content",
+      "icon": "file_copy",
+      "isSystemPermission": true
+    },
+    {
+      "name": "Faq Management",
+      "slug": "faq-full-access",
+      "description": "Full access to Faq pages - view, add, edit, delete",
+      "module": "faq",
+      "operations": [
+        "view",
+        "add",
+        "edit",
+        "delete"
+      ],
+      "category": "Content",
+      "icon": "question_mark",
       "isSystemPermission": true
     },
     {
@@ -125,7 +205,10 @@
       "slug": "settings-full-access",
       "description": "Full access to system settings",
       "module": "settings",
-      "operations": ["view", "edit"],
+      "operations": [
+        "view",
+        "edit"
+      ],
       "category": "System",
       "icon": "settings",
       "isSystemPermission": true
@@ -135,7 +218,9 @@
       "slug": "settings-view-only",
       "description": "View system settings only",
       "module": "settings",
-      "operations": ["view"],
+      "operations": [
+        "view"
+      ],
       "category": "System",
       "icon": "visibility",
       "isSystemPermission": true
@@ -145,7 +230,12 @@
       "slug": "admins-full-access",
       "description": "Full access to admin users - view, add, edit, delete",
       "module": "admins",
-      "operations": ["view", "add", "edit", "delete"],
+      "operations": [
+        "view",
+        "add",
+        "edit",
+        "delete"
+      ],
       "category": "User Management",
       "icon": "admin_panel_settings",
       "isSystemPermission": true
@@ -155,7 +245,12 @@
       "slug": "roles-full-access",
       "description": "Full access to roles - view, add, edit, delete",
       "module": "roles",
-      "operations": ["view", "add", "edit", "delete"],
+      "operations": [
+        "view",
+        "add",
+        "edit",
+        "delete"
+      ],
       "category": "User Management",
       "icon": "group",
       "isSystemPermission": true
@@ -165,7 +260,12 @@
       "slug": "permissions-full-access",
       "description": "Full access to permissions - view, add, edit, delete",
       "module": "permissions",
-      "operations": ["view", "add", "edit", "delete"],
+      "operations": [
+        "view",
+        "add",
+        "edit",
+        "delete"
+      ],
       "category": "User Management",
       "icon": "security",
       "isSystemPermission": true
@@ -175,7 +275,10 @@
       "slug": "reports-access",
       "description": "Access to reports and analytics",
       "module": "reports",
-      "operations": ["view", "export"],
+      "operations": [
+        "view",
+        "export"
+      ],
       "category": "Reports",
       "icon": "assessment",
       "isSystemPermission": true
@@ -185,7 +288,10 @@
       "slug": "analytics-access",
       "description": "Access to detailed analytics",
       "module": "analytics",
-      "operations": ["view", "export"],
+      "operations": [
+        "view",
+        "export"
+      ],
       "category": "Reports",
       "icon": "analytics",
       "isSystemPermission": true
@@ -208,6 +314,8 @@
         "reviews-full-access",
         "coupons-full-access",
         "banners-full-access",
+        "cms-full-access",
+        "faq-full-access",
         "settings-full-access",
         "admins-full-access",
         "roles-full-access",
@@ -232,6 +340,8 @@
         "reviews-full-access",
         "coupons-full-access",
         "banners-full-access",
+        "cms-full-access",
+        "faq-full-access",
         "settings-view-only",
         "reports-access",
         "analytics-access"
@@ -291,17 +401,21 @@
       "email": "admin@electronic.com",
       "username": "superadmin",
       "password": "admin123",
-      "roleSlugs": ["super-admin"],
+      "roleSlugs": [
+        "super-admin"
+      ],
       "emailVerified": true,
       "isActive": true
     },
     {
       "firstName": "System",
       "lastName": "Manager",
-      "email": "manager@electronic.com", 
+      "email": "manager@electronic.com",
       "username": "manager",
       "password": "manager123",
-      "roleSlugs": ["manager"],
+      "roleSlugs": [
+        "manager"
+      ],
       "emailVerified": true,
       "isActive": true
     }

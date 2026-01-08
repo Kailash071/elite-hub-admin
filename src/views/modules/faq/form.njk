@@ -1,0 +1,177 @@
+{% extends "layouts/admin.njk" %}
+
+{% block title %}{{ 'Edit FAQ' if faq else 'Add FAQ' }} - {{ APP_NAME }}{% endblock %}
+
+{% set pageTitle = 'Edit FAQ' if faq else 'Add FAQ' %}
+{% set breadcrumbSection = "FAQs" %}
+{% set breadcrumbSectionUrl = "/faqs" %}
+{% set breadcrumbActive = pageTitle %}
+{% set currentPage = "faq" %}
+
+{% block content %}
+<form id="faqForm" action="{{ '/faqs/' + faq._id if faq else '/faqs' }}" method="POST">
+
+    <div class="row">
+        <div class="col-md-9">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">FAQ Details</h5>
+                </div>
+                <div class="card-body">
+
+                    <!-- Question -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Question <span class="text-danger">*</span>
+                        </label>
+                        <textarea
+                            class="form-control"
+                            id="question"
+                            name="question"
+                            maxlength="500">{{ faq.question if faq }}</textarea>
+                    </div>
+
+                    <!-- Answer -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Answer <span class="text-danger">*</span>
+                        </label>
+                        <textarea
+                            class="form-control"
+                            id="answer"
+                            name="answer"
+                            rows="6">{{ faq.answer if faq }}</textarea>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Settings</h5>
+                </div>
+                <div class="card-body">
+
+                    <div class="mb-3">
+                        <label class="form-label">Sort Order</label>
+                        <input
+                            type="number"
+                            class="form-control"
+                            name="sortOrder"
+                            value="{{ faq.sortOrder if faq else nextOrder }}"
+                            min="0"
+                            {{ 'disabled' if not faq }}>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            name="isActive"
+                            {{ 'checked' if (faq and faq.isActive) or not faq }}>
+                        <label class="form-check-label">Active</label>
+                    </div>
+
+                    {% if faq %}
+                    <hr>
+                    <div class="small text-muted mb-3">
+                        <div><strong>Created:</strong> {{ faq.createdAt | date('MMM DD, YYYY') }}</div>
+                        <div><strong>Updated:</strong> {{ faq.updatedAt | date('MMM DD, YYYY') }}</div>
+                    </div>
+                    {% endif %}
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            {{ 'Update FAQ' if faq else 'Create FAQ' }}
+                        </button>
+                        <a href="/faqs" class="btn btn-outline-secondary">Cancel</a>
+
+                        {% if faq %}
+                        <button type="button"
+                                class="btn btn-outline-danger"
+                                onclick="deleteFaq('{{ faq._id }}')">
+                            Delete
+                        </button>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const editors = {};
+    const ids = ['question', 'answer'];
+
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        ClassicEditor
+            .create(el)
+            .then(editor => {
+                editors[id] = editor;
+            })
+            .catch(console.error);
+    });
+
+    document.getElementById('faqForm').addEventListener('submit', function (e) {
+
+        const question = editors.question?.getData().trim();
+        const answer = editors.answer?.getData().trim();
+
+        if (!question || !answer) {
+            e.preventDefault();
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Both Question and Answer are required.'
+            });
+
+            return false;
+        }
+
+        // Sync data back to textarea for POST
+        document.getElementById('question').value = question;
+        document.getElementById('answer').value = answer;
+    });
+});
+</script>
+
+{% if faq %}
+<script>
+function deleteFaq(id) {
+    Swal.fire({
+        title: 'Delete FAQ?',
+        text: 'This action cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33'
+    }).then(result => {
+        if (result.isConfirmed) {
+            fetch(`/faqs/${id}`, { method: 'DELETE' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status) {
+                        Swal.fire('Deleted!', data.message, 'success')
+                            .then(() => window.location.href = '/faqs');
+                    } else {
+                        Swal.fire('Error', data.message, 'error');
+                    }
+                });
+        }
+    });
+}
+</script>
+{% endif %}
+{% endblock %}
