@@ -28,140 +28,160 @@ export const mainCategories: MainCategories[] = [
         displayName: MAIN_CATEGORIES_ENUM.ELECTRONICS,
         slug: "electronics",
         description: "All electronics products",
-        isActive: true
+        isActive: true,
+        sortOrder: 1
     },
     {
         name: MAIN_CATEGORIES_ENUM.FASHION,
         displayName: MAIN_CATEGORIES_ENUM.FASHION,
         slug: "fashion",
         description: "All fashion products",
-        isActive: true
+        isActive: true,
+        sortOrder: 2
     },
     {
         name: MAIN_CATEGORIES_ENUM.KITCHEN,
         displayName: MAIN_CATEGORIES_ENUM.KITCHEN,
         slug: "kitchen",
         description: "All kitchen products",
-        isActive: true
+        isActive: true,
+        sortOrder: 3
     },
     {
         name: MAIN_CATEGORIES_ENUM.HOME,
         displayName: MAIN_CATEGORIES_ENUM.HOME,
         slug: "home",
         description: "All home products",
-        isActive: true
+        isActive: true,
+        sortOrder: 4
     },
     {
         name: MAIN_CATEGORIES_ENUM.FOOTWEAR,
         displayName: MAIN_CATEGORIES_ENUM.FOOTWEAR,
         slug: "footwear",
         description: "All footwear products",
-        isActive: true
+        isActive: true,
+        sortOrder: 5
     },
     {
         name: MAIN_CATEGORIES_ENUM.BEAUTY,
         displayName: MAIN_CATEGORIES_ENUM.BEAUTY,
         slug: "beauty",
         description: "All beauty products",
-        isActive: true
+        isActive: true,
+        sortOrder: 6
     },
     {
         name: MAIN_CATEGORIES_ENUM.KIDS,
         displayName: MAIN_CATEGORIES_ENUM.KIDS,
         slug: "kids",
         description: "All kids products",
-        isActive: true
+        isActive: true,
+        sortOrder: 7
     },
     {
         name: MAIN_CATEGORIES_ENUM.GROCERY,
         displayName: MAIN_CATEGORIES_ENUM.GROCERY,
         slug: "grocery",
         description: "All grocery products",
-        isActive: true
+        isActive: true,
+        sortOrder: 8
     },
     {
         name: MAIN_CATEGORIES_ENUM.GROOMING,
         displayName: MAIN_CATEGORIES_ENUM.GROOMING,
         slug: "grooming",
         description: "All grooming products",
-        isActive: true
+        isActive: true,
+        sortOrder: 9
     },
     {
         name: MAIN_CATEGORIES_ENUM.HOUSEHOLD,
         displayName: MAIN_CATEGORIES_ENUM.HOUSEHOLD,
         slug: "household",
         description: "All household products",
-        isActive: true
+        isActive: true,
+        sortOrder: 10
     },
     {
         name: MAIN_CATEGORIES_ENUM.WELLNESS,
         displayName: MAIN_CATEGORIES_ENUM.WELLNESS,
         slug: "wellness",
         description: "All wellness products",
-        isActive: true
+        isActive: true,
+        sortOrder: 11
     },
     {
         name: MAIN_CATEGORIES_ENUM.TOYS,
         displayName: MAIN_CATEGORIES_ENUM.TOYS,
         slug: "toys",
         description: "All toys products",
-        isActive: true
+        isActive: true,
+        sortOrder: 12
     },
     {
         name: MAIN_CATEGORIES_ENUM.GAMES,
         displayName: MAIN_CATEGORIES_ENUM.GAMES,
         slug: "games",
         description: "All games products",
-        isActive: true
+        isActive: true,
+        sortOrder: 13
     },
     {
         name: MAIN_CATEGORIES_ENUM.SPORTS,
         displayName: MAIN_CATEGORIES_ENUM.SPORTS,
         slug: "sports",
         description: "All sports products",
-        isActive: true
+        isActive: true,
+        sortOrder: 14
     },
     {
         name: MAIN_CATEGORIES_ENUM.FITNESS,
         displayName: MAIN_CATEGORIES_ENUM.FITNESS,
         slug: "fitness",
         description: "All fitness products",
-        isActive: true
+        isActive: true,
+        sortOrder: 15
     },
     {
         name: MAIN_CATEGORIES_ENUM.APPLIANCES,
         displayName: MAIN_CATEGORIES_ENUM.APPLIANCES,
         slug: "appliances",
         description: "All appliances products",
-        isActive: true
+        isActive: true,
+        sortOrder: 16
     },
     {
         name: MAIN_CATEGORIES_ENUM.ACCESSORIES,
         displayName: MAIN_CATEGORIES_ENUM.ACCESSORIES,
         slug: "accessories",
         description: "All accessories products",
-        isActive: true
+        isActive: true,
+        sortOrder: 17
     },
     {
         name: MAIN_CATEGORIES_ENUM.BOOKS,
         displayName: MAIN_CATEGORIES_ENUM.BOOKS,
         slug: "books",
         description: "All books products",
-        isActive: true
+        isActive: true,
+        sortOrder: 18
     },
     {
         name: MAIN_CATEGORIES_ENUM.FURNITURE,
         displayName: MAIN_CATEGORIES_ENUM.FURNITURE,
         slug: "furniture",
         description: "All furniture products",
-        isActive: true
+        isActive: true,
+        sortOrder: 19
     },
     {
         name: MAIN_CATEGORIES_ENUM.JEWELLERY,
         displayName: MAIN_CATEGORIES_ENUM.JEWELLERY,
         slug: "jewellery",
         description: "All jewellery products",
-        isActive: true
+        isActive: true,
+        sortOrder: 20
     },
 
 ]

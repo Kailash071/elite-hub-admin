@@ -3,7 +3,7 @@
   <div class="app-brand demo">
     <a href="/dashboard" class="app-brand-link">
       <span class="app-brand-logo demo"> </span>
-      <span class="app-brand-text demo menu-text fw-bolder ms-2">Electronic</span>
+      <span class="app-brand-text demo menu-text fw-bolder ms-2 text-capitalize">{{APP_NAME}}</span>
     </a>
 
     <a
@@ -38,6 +38,12 @@
     </li>
 
     <!-- Categories -->
+    <li class="menu-item {{ 'active' if currentPage == 'main-categories' }}">
+      <a href="/categories/main" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-category"></i>
+        <div data-i18n="Main Categories">Main Categories</div>
+      </a>
+    </li>
     <li class="menu-item {{ 'active' if currentPage == 'categories' }}">
       <a href="/categories" class="menu-link">
         <i class="menu-icon tf-icons bx bx-category"></i>

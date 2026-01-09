@@ -4,6 +4,7 @@ export interface MainCategories {
     slug: string;
     description: string;
     isActive: boolean;
+    sortOrder: number;
 }
 
 export interface SubCategories {

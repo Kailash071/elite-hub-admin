@@ -6,7 +6,7 @@
 {% set breadcrumbSection = "Main Categories" %}
 {% set breadcrumbSectionUrl = "/categories/main" %}
 {% set breadcrumbActive = 'Edit Main Category' if mainCategory else 'Add Main Category' %}
-{% set currentPage = "categories" %}
+{% set currentPage = "main-categories" %}
 
 {% block content %}
 <form id="mainCategoryForm" action="{{ '/categories/main/' + mainCategory._id if mainCategory else '/categories/main' }}" method="POST" enctype="multipart/form-data">
@@ -192,7 +192,9 @@
                                id="sortOrder"
                                name="sortOrder" 
                                value="{{ mainCategory.sortOrder if mainCategory else formData.sortOrder or '0' }}"
-                               min="0">
+                               min="0"
+                               {{ 'disabled' if not mainCategory }}
+                               >
                         <div class="form-text">Higher numbers appear last</div>
                     </div>
                 </div>
@@ -378,7 +380,7 @@ function removeImage() {
     });
 }
 
-{% if mainCategory %}
+
 function deleteMainCategory(id, name) {
     Swal.fire({
         title: 'Delete Category?',
@@ -413,6 +415,6 @@ function deleteMainCategory(id, name) {
         }
     });
 }
-{% endif %}
+
 </script>
 {% endblock %}

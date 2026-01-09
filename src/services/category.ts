@@ -140,32 +140,13 @@ export const findAllSubCategories = async () => {
 };
 
 export const findAllParentCategories = async () => {
-  return await Category.aggregate([
-    {
-      $match: { level: 0 }
-    },
-    {
-      $lookup: {
-        from: "categories",
-        localField: "parentCategory",
-        foreignField: "_id",
-        as: "parentCategories"
-      }
-    },
-    {
-      $project: {
-        _id: "$parentCategories._id",
-        name: "$parentCategories.name",
-        slug: "$parentCategories.slug"
-      }
-    }
-  ]);
+  return await Category.find({ level: 0 }).lean();
 };
 
 // Sorting & Ordering Services
 
 export const getNextSortOrder = async () => {
-  const lastCategory = await Category.findOne({ isActive: true }).sort({ sortOrder: -1 });
+  const lastCategory = await Category.findOne({ isActive: true, isDeleted: false }).sort({ sortOrder: -1 });
   return (lastCategory?.sortOrder || 0) + 1;
 };
 
@@ -206,6 +187,58 @@ export const reorderOnUpdate = async (id: string, newOrder: number, oldOrder: nu
 export const reorderOnDelete = async (deletedOrder: number) => {
   // Shift all brands with sortOrder > deletedOrder down by 1 to fill the gap
   await Category.updateMany(
+    { sortOrder: { $gt: deletedOrder }, isActive: true },
+    { $inc: { sortOrder: -1 } }
+  );
+};
+
+
+// Main Category Sorting Services
+
+export const countMainCategories = async (query: any = {}) => {
+  return await MainCategory.countDocuments(query);
+};
+
+export const getNextMainSortOrder = async () => {
+  const lastCategory = await MainCategory.findOne({ isActive: true, isDeleted: false }).sort({ sortOrder: -1 });
+  return (lastCategory?.sortOrder || 0) + 1;
+};
+
+export const shiftMainOrdersForInsert = async (targetOrder: number) => {
+  await MainCategory.updateMany(
+    { sortOrder: { $gte: targetOrder }, isActive: true },
+    { $inc: { sortOrder: 1 } }
+  );
+};
+
+export const reorderMainOnUpdate = async (id: string, newOrder: number, oldOrder: number) => {
+  if (newOrder === oldOrder) return;
+
+  if (newOrder < oldOrder) {
+    // Moving up
+    await MainCategory.updateMany(
+      {
+        _id: { $ne: id },
+        sortOrder: { $gte: newOrder, $lt: oldOrder },
+        isActive: true
+      },
+      { $inc: { sortOrder: 1 } }
+    );
+  } else {
+    // Moving down
+    await MainCategory.updateMany(
+      {
+        _id: { $ne: id },
+        sortOrder: { $gt: oldOrder, $lte: newOrder },
+        isActive: true
+      },
+      { $inc: { sortOrder: -1 } }
+    );
+  }
+};
+
+export const reorderMainOnDelete = async (deletedOrder: number) => {
+  await MainCategory.updateMany(
     { sortOrder: { $gt: deletedOrder }, isActive: true },
     { $inc: { sortOrder: -1 } }
   );

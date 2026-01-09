@@ -428,3 +428,11 @@ export const createDefaultMainCategories = async () => {
     }
   }
 }
+export const updateDefaultMainCategories = async () => {
+  for (const mainCategory of mainCategories) {
+    let isExists = await CategoryService.findMainCategoryBySlug(mainCategory.slug);
+    if (isExists) {
+      await CategoryService.updateMainCategoryByQuery({ _id: isExists?._id }, mainCategory);
+    }
+  }
+}

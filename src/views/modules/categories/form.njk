@@ -316,7 +316,7 @@ function initializeForm() {
 }
 
 function generateSlug(text) {
-    return text?
+    return text
         .toString()
         .toLowerCase()
         .replace(/\s+/g, '-')
@@ -409,7 +409,7 @@ function removeImage() {
     });
 }
 
-{% if category %}
+
 function deleteCategory(id, name) {
     Swal.fire({
         title: 'Delete Category?',
@@ -425,7 +425,6 @@ function deleteCategory(id, name) {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
                 }
             })
             .then(response => response.json())
@@ -444,6 +443,6 @@ function deleteCategory(id, name) {
         }
     });
 }
-{% endif %}
+
 </script>
 {% endblock %}

@@ -1,6 +1,7 @@
-import { createDefaultMainCategories, initializeDefaultData } from "./default";
+import { createDefaultMainCategories, initializeDefaultData, updateDefaultMainCategories } from "./default";
 
 export default async function runMainDefaultInitialize() {
   // await initializeDefaultData();
-  await createDefaultMainCategories();
+  // await createDefaultMainCategories();
+  // await updateDefaultMainCategories();
 }

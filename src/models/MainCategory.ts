@@ -11,6 +11,7 @@ export interface IMainCategory extends Document {
     seoTitle: string;
     seoDescription: string;
     seoKeywords: string[];
+    isDeleted: boolean;
 }
 
 const mainCategorySchema = new Schema<IMainCategory>({
@@ -29,7 +30,7 @@ const mainCategorySchema = new Schema<IMainCategory>({
     slug: {
         type: String,
         required: true,
-        unique: true,
+        // unique: true,
         lowercase: true,
         trim: true,
         maxlength: 100
@@ -62,7 +63,11 @@ const mainCategorySchema = new Schema<IMainCategory>({
     seoKeywords: [{
         type: String,
         trim: true,
-    }]
+    }],
+    isDeleted: {
+        type: Boolean,
+        default: false
+    }
 }, {
     timestamps: true
 });

@@ -55,6 +55,17 @@ router.delete('/brands/:id', BrandsController.destroy);
 router.get('/brands/:id/view', BrandsController.viewPage);
 router.patch('/brands/:id/toggle-status', BrandsController.toggleStatus);
 
+// ===== MAIN CATEGORIES ROUTES =====
+router.get('/categories/main', CategoriesController.mainIndex);
+router.post('/categories/main/datatable', CategoriesController.mainIndexData);
+router.get('/categories/main/add', CategoriesController.mainCreate);
+router.post('/categories/main', CategoriesController.mainStore);
+router.post('/categories/main/bulk-action', CategoriesController.mainBulkAction);
+router.get('/categories/main/:id/edit', CategoriesController.mainEdit);
+router.post('/categories/main/:id', CategoriesController.mainUpdate);
+router.delete('/categories/main/:id', CategoriesController.mainDestroy);
+router.patch('/categories/main/:id/toggle-status', CategoriesController.mainToggleStatus);
+
 // ===== CATEGORIES ROUTES =====
 router.get('/categories', CategoriesController.index);
 router.post('/categories/datatable', CategoriesController.indexData);
