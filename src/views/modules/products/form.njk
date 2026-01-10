@@ -1,0 +1,281 @@
+<div class="row">
+    <div class="col-md-8">
+        <!-- Basic Information -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Basic Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label" for="name">Product Name</label>
+                    <input type="text" class="form-control" id="name" name="name" 
+                           value="{{ product.name }}" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label" for="productCode">Product Code</label>
+                    <input type="text" class="form-control" id="productCode" name="productCode" 
+                           value="{{ product.productCode }}">
+                    <div class="form-text">Unique identifier for the product.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="description">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="4">{{ product.description }}</textarea>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label" for="shortDescription">Short Description</label>
+                    <textarea class="form-control" id="shortDescription" name="shortDescription" rows="2">{{ product.shortDescription }}</textarea>
+                    <div class="form-text">Brief summary for listing pages (max 500 chars).</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Media -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Media</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Image URLs</label>
+                    <div id="imageUrlsContainer">
+                        {% if product.images and product.images.length > 0 %}
+                            {% for image in product.images %}
+                            <div class="input-group mb-2">
+                                <input type="text" class="form-control" name="images[]" value="{{ image }}" placeholder="https://example.com/image.jpg">
+                                <button class="btn btn-outline-danger" type="button" onclick="removeImageInput(this)">
+                                    <i class="ti ti-trash"></i>
+                                </button>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="input-group mb-2">
+                                <input type="text" class="form-control" name="images[]" placeholder="https://example.com/image.jpg">
+                                <button class="btn btn-outline-danger" type="button" onclick="removeImageInput(this)">
+                                    <i class="ti ti-trash"></i>
+                                </button>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="addImageInput()">
+                        <i class="ti ti-plus me-1"></i> Add Another Image URL
+                    </button>
+                    <div class="form-text">Enter direct URLs for product images.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pricing -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Pricing</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label" for="price">Price (₹)</label>
+                        <input type="number" class="form-control" id="price" name="price" 
+                               value="{{ product.price }}" required min="0" step="0.01">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label" for="salePrice">Sale Price (₹)</label>
+                        <input type="number" class="form-control" id="salePrice" name="salePrice" 
+                               value="{{ product.salePrice }}" min="0" step="0.01">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label" for="costPrice">Cost Price (₹)</label>
+                        <input type="number" class="form-control" id="costPrice" name="costPrice" 
+                               value="{{ product.costPrice }}" min="0" step="0.01">
+                        <div class="form-text">For internal use only.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Inventory</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label" for="sku">SKU (Stock Keeping Unit)</label>
+                        <input type="text" class="form-control" id="sku" name="sku" 
+                               value="{{ product.sku }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="barcode">Barcode (ISBN, UPC, GTIN, etc.)</label>
+                        <input type="text" class="form-control" id="barcode" name="barcode" 
+                               value="{{ product.barcode }}">
+                    </div>
+                </div>
+
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="stockTracking" name="stockTracking" 
+                           {% if product.stockTracking or not product %}checked{% endif %}>
+                    <label class="form-check-label" for="stockTracking">Track Quantity</label>
+                </div>
+
+                <div class="row" id="stockFields">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="stockQuantity">Quantity</label>
+                        <input type="number" class="form-control" id="stockQuantity" name="stockQuantity" 
+                               value="{{ product.stockQuantity | default(0) }}" min="0">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="lowStockThreshold">Low Stock Threshold</label>
+                        <input type="number" class="form-control" id="lowStockThreshold" name="lowStockThreshold" 
+                               value="{{ product.lowStockThreshold | default(5) }}" min="0">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Attributes (Simplified inline) -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Product Details</h5>
+            </div>
+            <div class="card-body">
+                 <div class="mb-3">
+                    <label class="form-label" for="materials">Materials</label>
+                    <input type="text" class="form-control" id="materials" name="materials" 
+                           value="{{ (product.materials | default([])) | join(', ') }}" placeholder="Gold, Silver, Cotton">
+                    <div class="form-text">Comma separated list of materials</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="weight">Weight (g)</label>
+                    <input type="number" class="form-control" id="weight" name="weight" 
+                           value="{{ product.weight }}" min="0" step="0.01">
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="col-md-4">
+        <!-- Organization -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Organization</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label" for="status">Status</label>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="isActive" name="isActive" 
+                               {% if product.isActive or not product %}checked{% endif %}>
+                        <label class="form-check-label" for="isActive">Active</label>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="category">Category</label>
+                    <select class="form-select" id="category" name="category" required>
+                        <option value="">Select Category</option>
+                        {% for category in categories %}
+                        <option value="{{ category._id }}" 
+                            {% if product.mainCategory and (product.mainCategory._id | string == category._id | string or product.mainCategory | string == category._id | string) %}selected{% endif %}
+                            {% if product.category == category._id | string %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Sub Categories would ideally be fetched via AJAX based on Main Category -->
+                <!-- For now, we assume simple list or future implementation -->
+
+                <div class="mb-3">
+                    <label class="form-label" for="brand">Brand</label>
+                    <select class="form-select" id="brand" name="brand">
+                        <option value="">Select Brand</option>
+                        {% for brand in brands %}
+                        <option value="{{ brand._id }}" 
+                            {% if product.brand and (product.brand._id | string == brand._id | string or product.brand | string == brand._id | string) %}selected{% endif %}>
+                            {{ brand.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="tags">Tags</label>
+                    <input type="text" class="form-control" id="tags" name="tags" 
+                           value="{{ (product.tags | default([])) | join(', ') }}" placeholder="Summer, Sale, New">
+                    <div class="form-text">Comma separated tags.</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label" for="collections">Collections</label>
+                    <input type="text" class="form-control" id="collections" name="collections" 
+                           value="{{ (product.collections | default([])) | join(', ') }}" placeholder="Summer Collection, Wedding">
+                    <div class="form-text">Comma separated collections.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visibility -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Visibility</h5>
+            </div>
+            <div class="card-body">
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="isFeatured" name="isFeatured" 
+                           {% if product.isFeatured %}checked{% endif %}>
+                    <label class="form-check-label" for="isFeatured">Featured Product</label>
+                </div>
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="isNewLaunch" name="isNewLaunch" 
+                           {% if product.isNewLaunch %}checked{% endif %}>
+                    <label class="form-check-label" for="isNewLaunch">New Launch</label>
+                </div>
+                 <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="isOnSale" name="isOnSale" 
+                           {% if product.isOnSale %}checked{% endif %}>
+                    <label class="form-check-label" for="isOnSale">On Sale</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function addImageInput() {
+        const container = document.getElementById('imageUrlsContainer');
+        const div = document.createElement('div');
+        div.className = 'input-group mb-2';
+        div.innerHTML = `
+            <input type="text" class="form-control" name="images[]" placeholder="https://example.com/image.jpg">
+            <button class="btn btn-outline-danger" type="button" onclick="removeImageInput(this)">
+                <i class="ti ti-trash"></i>
+            </button>
+        `;
+        container.appendChild(div);
+    }
+
+    function removeImageInput(btn) {
+        const container = document.getElementById('imageUrlsContainer');
+        if (container.children.length > 1) {
+            btn.closest('.input-group').remove();
+        } else {
+            // Clear content if it's the last one
+            btn.previousElementSibling.value = '';
+        }
+    }
+
+    document.getElementById('stockTracking').addEventListener('change', function() {
+        const stockFields = document.getElementById('stockFields');
+        if (this.checked) {
+            stockFields.style.opacity = '1';
+            stockFields.style.pointerEvents = 'auto';
+        } else {
+            stockFields.style.opacity = '0.5';
+            stockFields.style.pointerEvents = 'none';
+        }
+    });
+</script>

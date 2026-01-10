@@ -1,0 +1,222 @@
+{% extends "layouts/admin.njk" %}
+
+{% block title %}{{ product.name }} - {{ APP_NAME }}{% endblock %}
+
+{% block content %}
+<!-- [ Main Content ] start -->
+<div class="row">
+    <!-- Header -->
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-3">
+                         {% if product.images and product.images.length > 0 %}
+                            <img src="{{ product.images[0] }}" alt="{{ product.name }}" 
+                                 class="rounded" style="width: 80px; height: 80px; object-fit: cover;">
+                        {% else %}
+                            <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                 style="width: 80px; height: 80px;">
+                                <i class="ti ti-photo text-muted fs-2"></i>
+                            </div>
+                        {% endif %}
+                        <div>
+                            <h3 class="mb-1">{{ product.name }}</h3>
+                            <div class="d-flex align-items-center gap-2 text-muted">
+                                <span class="badge bg-light text-dark border">SKU: {{ product.sku }}</span>
+                                {% if product.stockStatus == 'in_stock' %}
+                                <span class="badge bg-success">In Stock</span>
+                                {% elif product.stockStatus == 'low_stock' %}
+                                <span class="badge bg-warning">Low Stock</span>
+                                {% else %}
+                                <span class="badge bg-danger">Out of Stock</span>
+                                {% endif %}
+                                
+                                {% if product.isActive %}
+                                <span class="badge bg-success">Active</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="/products" class="btn btn-outline-secondary">
+                            <i class="ti ti-arrow-left me-1"></i>Back
+                        </a>
+                        <a href="/products/{{ product._id }}/edit" class="btn btn-primary">
+                            <i class="ti ti-pencil me-1"></i>Edit
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Details -->
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Product Details</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <td class="text-muted py-2 ps-0">Price</td>
+                            <td class="fw-bold fs-5 py-2 text-end">${{ product.price | number }}</td>
+                        </tr>
+                        {% if product.salePrice %}
+                        <tr>
+                            <td class="text-muted py-2 ps-0">Sale Price</td>
+                            <td class="fw-bold text-success py-2 text-end">${{ product.salePrice | number }}</td>
+                        </tr>
+                        {% endif %}
+                         <tr>
+                            <td class="text-muted py-2 ps-0">Cost Price</td>
+                            <td class="py-2 text-end">${{ product.costPrice | number }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted py-2 ps-0">Category</td>
+                            <td class="py-2 text-end">{{ product.mainCategory.name if product.mainCategory.name else product.mainCategory }}</td>
+                        </tr>
+                         <tr>
+                            <td class="text-muted py-2 ps-0">Brand</td>
+                            <td class="py-2 text-end">{{ product.brand.name if product.brand.name else product.brand }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <hr>
+                <h6 class="mb-2">Inventory</h6>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Stock Quantity</span>
+                    <span class="fw-bold">{{ product.stockQuantity }}</span>
+                </div>
+                 <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Low Stock Threshold</span>
+                    <span>{{ product.lowStockThreshold }}</span>
+                </div>
+                 <div class="d-flex justify-content-between">
+                    <span class="text-muted">Track Inventory</span>
+                    <span>{{ 'Yes' if product.stockTracking else 'No' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Attributes</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="small text-muted d-block">Tags</label>
+                    {% if product.tags and product.tags.length %}
+                        {% for tag in product.tags %}
+                        <span class="badge bg-light text-dark border">{{ tag }}</span>
+                        {% endfor %}
+                    {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                </div>
+                <div class="mb-3">
+                    <label class="small text-muted d-block">Collections</label>
+                    {% if product.collections and product.collections.length %}
+                        {% for col in product.collections %}
+                        <span class="badge bg-light text-dark border">{{ col }}</span>
+                        {% endfor %}
+                    {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                </div>
+                 <div class="mb-0">
+                    <label class="small text-muted d-block">Materials</label>
+                    {% if product.materials and product.materials.length %}
+                        {% for mat in product.materials %}
+                        <span class="badge bg-light text-dark border">{{ mat }}</span>
+                        {% endfor %}
+                    {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Description & Media -->
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Description</h5>
+            </div>
+            <div class="card-body">
+                {% if product.shortDescription %}
+                <div class="alert alert-light border mb-3">
+                    <strong>Short Description:</strong> {{ product.shortDescription }}
+                </div>
+                {% endif %}
+                
+                {% if product.description %}
+                <div class="product-description">
+                    {{ product.description | nl2br | safe }}
+                </div>
+                {% else %}
+                <p class="text-muted fst-italic">No description available.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Media Gallery</h5>
+            </div>
+            <div class="card-body">
+                 {% if product.images and product.images.length > 0 %}
+                <div class="row g-3">
+                    {% for image in product.images %}
+                    <div class="col-md-3 col-6">
+                        <a href="{{ image }}" target="_blank" class="d-block border rounded overflow-hidden">
+                            <img src="{{ image }}" class="w-100 object-fit-cover" style="height: 150px;" alt="Product Image">
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted fst-italic">No images available.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Stats -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                     <div class="card-body d-flex align-items-center">
+                        <div class="bg-primary bg-opacity-10 p-3 rounded text-primary me-3">
+                            <i class="ti ti-star fs-2"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">{{ product.averageRating | default(0) }} / 5</h5>
+                            <small class="text-muted">Average Rating</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+             <div class="col-md-6">
+                <div class="card">
+                     <div class="card-body d-flex align-items-center">
+                        <div class="bg-success bg-opacity-10 p-3 rounded text-success me-3">
+                            <i class="ti ti-message fs-2"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">{{ product.totalReviews | default(0) }}</h5>
+                            <small class="text-muted">Total Reviews</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<!-- [ Main Content ] end -->
+{% endblock %}

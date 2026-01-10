@@ -1,0 +1,36 @@
+{% extends "layouts/admin.njk" %}
+
+{% block title %}Edit Product - {{ APP_NAME }}{% endblock %}
+
+{% block content %}
+<!-- [ Main Content ] start -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Edit Product: {{ product.name }}</h5>
+                <div>
+                     <a href="/products/{{ product._id }}" class="btn btn-info btn-sm me-1">
+                        <i class="ti ti-eye me-1"></i>View
+                    </a>
+                    <a href="/products" class="btn btn-secondary btn-sm">
+                        <i class="ti ti-arrow-left me-1"></i>Back
+                    </a>
+                </div>
+            </div>
+            
+            <form action="/products/{{ product._id }}" method="POST" enctype="application/x-www-form-urlencoded" class="card-body">
+                {% include "modules/products/form.njk" %}
+                
+                <div class="mt-4 d-flex justify-content-end gap-2">
+                    <a href="/products" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti ti-check me-1"></i>Update Product
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- [ Main Content ] end -->
+{% endblock %}

@@ -39,18 +39,23 @@ export const deleteProductById = async (id: string) => {
 };
 
 export const findProducts = async (query: any = {}, options: any = {}) => {
-  const { page = 1, limit = 25, sort = { createdAt: -1 } } = options;
+  const { page = 1, limit = 25, sort = { createdAt: -1 }, select } = options;
   const skip = (page - 1) * limit;
-  
+
+  let q = Product.find(query)
+    .populate('mainCategory', 'name slug')
+    .populate('subCategories', 'name slug')
+    .populate('brand', 'name slug')
+    .sort(sort)
+    .skip(skip)
+    .limit(limit);
+
+  if (select) {
+    q.select(select);
+  }
+
   return {
-    products: await Product.find(query)
-      .populate('mainCategory', 'name slug')
-      .populate('subCategories', 'name slug')
-      .populate('brand', 'name slug')
-      .sort(sort)
-      .skip(skip)
-      .limit(limit)
-      .lean(),
+    products: await q.lean(),
     total: await Product.countDocuments(query)
   };
 };
@@ -98,4 +103,22 @@ export const updateProductStock = async (id: string, quantity: number, operation
     },
     { new: true }
   );
+};
+
+export const bulkDeleteByIds = async (ids: string[]) => {
+  return await Product.deleteMany({ _id: { $in: ids } });
+};
+
+export const bulkUpdateStatus = async (ids: string[], status: 'published' | 'draft' | 'archived') => {
+  const isActive = status === 'published';
+  // You might want to map 'archived' to something specific if needed, 
+  // currently mapping published->active=true, draft->active=false
+  return await Product.updateMany(
+    { _id: { $in: ids } },
+    { isActive: isActive } // Simplified status mapping
+  );
+};
+
+export const updateManyProducts = async (query: any, update: any) => {
+  return await Product.updateMany(query, update);
 };

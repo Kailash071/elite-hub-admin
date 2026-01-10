@@ -36,45 +36,45 @@ export function createExpressApp(): express.Application {
 
   // Serve static files
   app.use('/', express.static(path.resolve(__dirname, '../public')));
-  
+
   // Add global template variables
   nunjucksEnv.addGlobal('APP_NAME', env.APP_NAME);
   nunjucksEnv.addGlobal('NODE_ENV', env.NODE_ENV);
   nunjucksEnv.addGlobal('BASE_URL', env.BASE_URL);
-  
+
   // Add custom filters
-  nunjucksEnv.addFilter('date', function(date: Date | string, format: string = 'YYYY-MM-DD') {
+  nunjucksEnv.addFilter('date', function (date: Date | string, format: string = 'YYYY-MM-DD') {
     const d = new Date(date);
     if (format === 'MMM DD, YYYY') {
-      return d.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric', 
-        year: 'numeric' 
+      return d.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
       });
     }
     return d.toISOString().split('T')[0];
   });
-  
-  nunjucksEnv.addFilter('number', function(value: number) {
+
+  nunjucksEnv.addFilter('number', function (value: number) {
     return new Intl.NumberFormat('en-IN').format(value);
   });
-  
-  nunjucksEnv.addFilter('timeAgo', function(date: Date | string) {
+
+  nunjucksEnv.addFilter('timeAgo', function (date: Date | string) {
     const now = new Date();
     const past = new Date(date);
     const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
-    
+
     if (diffInSeconds < 60) return 'just now';
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
     return `${Math.floor(diffInSeconds / 86400)} days ago`;
   });
-  
-  nunjucksEnv.addFilter('title', function(str: string) {
+
+  nunjucksEnv.addFilter('title', function (str: string) {
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   });
-  
-  nunjucksEnv.addGlobal('moment', function() {
+
+  nunjucksEnv.addGlobal('moment', function () {
     return { format: (format: string) => new Date().getFullYear() };
   });
 
@@ -126,27 +126,27 @@ export function createExpressApp(): express.Application {
   }));
 
   // Rate limiting
-  const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: env.API_RATE_LIMIT, // Limit each IP to API_RATE_LIMIT requests per windowMs
-    message: {
-      error: 'Too many requests from this IP, please try again later.',
-    },
-    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-  });
-  app.use(limiter);
+  // const limiter = rateLimit({
+  //   windowMs: 15 * 60 * 1000, // 15 minutes
+  //   max: env.API_RATE_LIMIT, // Limit each IP to API_RATE_LIMIT requests per windowMs
+  //   message: {
+  //     error: 'Too many requests from this IP, please try again later.',
+  //   },
+  //   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  //   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  // });
+  // app.use(limiter);
 
   // Compression middleware
   app.use(compression());
 
   // Body parsing middleware
-  app.use(express.json({ 
+  app.use(express.json({
     limit: '10mb',
     type: 'application/json',
   }));
-  app.use(express.urlencoded({ 
-    extended: true, 
+  app.use(express.urlencoded({
+    extended: true,
     limit: '10mb',
   }));
   app.use(fileUpload());
@@ -154,14 +154,14 @@ export function createExpressApp(): express.Application {
     secret: 'electronic@2025#kailash07##1234!',
     resave: false,
     saveUninitialized: true,
-    cookie: { 
+    cookie: {
       secure: env.NODE_ENV === 'production', // Only use secure cookies in production (HTTPS)
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000 // 24 hours
     }
   });
   app.use(sessionMiddleware);
-  
+
   const flashMiddleware = flash();
   app.use(flashMiddleware);
   // Request logging
@@ -231,10 +231,10 @@ export function setupErrorHandling(app: express.Application): void {
 export function setupGracefulShutdown(server: any): void {
   const shutdown = (signal: string) => {
     console.log(`\n📡 Received ${signal}. Starting graceful shutdown...`);
-    
+
     server.close(() => {
       console.log('🔌 HTTP server closed');
-      
+
       // Close database connections
       import('./database.js').then(({ Database }) => {
         Database.shutdown()

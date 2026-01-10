@@ -8,6 +8,7 @@ import * as BrandsController from '../controllers/BrandsController.js';
 import * as CategoriesController from '../controllers/CategoriesController.js';
 import * as CustomersController from '../controllers/CustomersController.js';
 import * as OrdersController from '../controllers/OrdersController.js';
+import * as InventoryController from '../controllers/InventoryController.js';
 import * as CouponsController from '../controllers/CouponsController.js';
 import * as CmsController from '../controllers/CmsController.js';
 import * as FaqController from '../controllers/FaqController.js';
@@ -36,9 +37,14 @@ router.get('/logout', AuthController.handleLogout);
 
 // ===== ADMIN PRODUCTS =====
 router.get('/products', ProductController.index);
+router.post('/products/datatable', ProductController.indexData);
+router.post('/products/bulk', ProductController.bulkAction); // Bulk action before :id routes
 router.get('/products/new', ProductController.create);
+router.post('/products/add', ProductController.store);
 router.get('/products/:id', ProductController.show);
 router.get('/products/:id/edit', ProductController.edit);
+router.post('/products/:id', ProductController.update);
+router.delete('/products/:id', ProductController.destroy);
 
 
 
@@ -103,6 +109,11 @@ router.patch('/orders/:id/status', OrdersController.updateStatus);
 router.post('/orders/datatable', OrdersController.datatable);
 router.post('/orders/bulk-status', OrdersController.bulkStatus);
 router.get('/orders/export', OrdersController.exportData);
+
+// ===== INVENTORY ROUTES =====
+router.get('/inventory', InventoryController.index);
+router.post('/inventory/datatable', InventoryController.indexData);
+router.post('/inventory/:id/stock', InventoryController.updateStock);
 
 // ===== COUPONS ROUTES =====
 router.get('/coupons', CouponsController.index);

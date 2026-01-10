@@ -39,47 +39,47 @@ export interface IProduct extends Document {
   mainCategory: Types.ObjectId; // Main category
   subCategories: Types.ObjectId[]; // Multiple subcategories
   brand?: Types.ObjectId;
-  
+
   // Product Media
   images: string[]; // Simplified to string array
   videos?: string[]; // URLs to product videos
-  
+
   // Pricing (base product pricing, variants can override)
   price: number;
   salePrice?: number;
   costPrice?: number;
-  
+
   // Product Variants
   variants: IProductVariant[];
   hasVariants: boolean;
-  
+
   // Product Details
   tags: string[]; // For collections like "New Launch", "Wedding Season", etc.
   collections: string[]; // "Bridal Collection", "Antique Collection"
   materials: string[]; // "Gold Plated", "Kundan", "Stone"
   weight?: number; // in grams
-  
+
   // Inventory (simplified)
   stockTracking: boolean;
   stockQuantity: number;
   lowStockThreshold: number;
   stockStatus: 'in_stock' | 'low_stock' | 'out_of_stock';
-  
+
   // SEO
   seoTitle?: string;
   seoDescription?: string;
   seoKeywords?: string[];
-  
+
   // Product Status
   isActive: boolean;
   isFeatured: boolean;
   isNewLaunch: boolean;
   isOnSale: boolean;
-  
+
   // Ratings & Reviews
   averageRating: number;
   totalReviews: number;
-  
+
   // Shipping
   shippingRequired: boolean;
   shippingWeight?: number;
@@ -89,7 +89,7 @@ export interface IProduct extends Document {
     height: number;
     unit: string;
   };
-  
+  isDeleted: boolean;
   // Dates
   publishedAt?: Date;
   createdAt: Date;
@@ -120,6 +120,7 @@ const productVariantSchema = new Schema<IProductVariant>({
     type: String,
     required: true,
     unique: true,
+    sparse: true,
     trim: true,
     uppercase: true
   },
@@ -227,7 +228,7 @@ const productSchema = new Schema<IProduct>({
     type: Schema.Types.ObjectId,
     ref: 'Brand'
   },
-  
+
   // Media
   images: [{
     type: String,
@@ -237,7 +238,7 @@ const productSchema = new Schema<IProduct>({
     type: String,
     trim: true
   }],
-  
+
   // Pricing
   price: {
     type: Number,
@@ -252,14 +253,14 @@ const productSchema = new Schema<IProduct>({
     type: Number,
     min: 0
   },
-  
+
   // Variants
   variants: [productVariantSchema],
   hasVariants: {
     type: Boolean,
     default: false
   },
-  
+
   // Product Details
   tags: [{
     type: String,
@@ -278,7 +279,7 @@ const productSchema = new Schema<IProduct>({
     type: Number,
     min: 0
   },
-  
+
   // Simple inventory
   stockTracking: {
     type: Boolean,
@@ -298,7 +299,7 @@ const productSchema = new Schema<IProduct>({
     enum: ['in_stock', 'low_stock', 'out_of_stock'],
     default: 'in_stock'
   },
-  
+
   // SEO
   seoTitle: {
     type: String,
@@ -312,7 +313,7 @@ const productSchema = new Schema<IProduct>({
     type: String,
     trim: true
   }],
-  
+
   // Status
   isActive: {
     type: Boolean,
@@ -330,7 +331,7 @@ const productSchema = new Schema<IProduct>({
     type: Boolean,
     default: false
   },
-  
+
   // Ratings
   averageRating: {
     type: Number,
@@ -343,7 +344,7 @@ const productSchema = new Schema<IProduct>({
     min: 0,
     default: 0
   },
-  
+
   // Shipping
   shippingRequired: {
     type: Boolean,
@@ -359,14 +360,17 @@ const productSchema = new Schema<IProduct>({
     height: { type: Number, min: 0 },
     unit: { type: String, enum: ['cm', 'inch', 'mm'], default: 'cm' }
   },
-  
+  isDeleted: {
+    type: Boolean,
+    default: false
+  },
   publishedAt: Date
 }, {
   timestamps: true
 });
 
 // Indexes
-productSchema.index({ slug: 1 }, { unique: true });
+// Removed redundant indexes defined in schema path options
 productSchema.index({ category: 1 });
 productSchema.index({ subcategories: 1 });
 productSchema.index({ brand: 1 });
@@ -390,23 +394,5 @@ productSchema.index({
   collections: 'text'
 });
 
-// Virtual for calculating discount percentage
-productSchema.virtual('discountPercentage').get(function() {
-  if (this.salePrice && this.price && this.salePrice < this.price) {
-    return Math.round(((this.price - this.salePrice) / this.price) * 100);
-  }
-  return 0;
-});
-
-// Virtual for checking if in stock
-productSchema.virtual('inStock').get(function() {
-  if (this.hasVariants) {
-    return this.variants.some((variant: any) => 
-      variant.isActive && 
-      (!variant.inventory.trackQuantity || variant.inventory.quantity > 0)
-    );
-  }
-  return !this.stockTracking || (this.stockQuantity || 0) > 0;
-});
 
 export const Product = model<IProduct>('Product', productSchema);
