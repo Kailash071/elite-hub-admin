@@ -87,16 +87,14 @@ router.patch('/categories/:id/toggle-status', CategoriesController.toggleStatus)
 router.get('/customers', CustomersController.index);
 router.get('/customers/add', CustomersController.create);
 router.post('/customers', CustomersController.store);
+router.post('/customers/bulk-action', CustomersController.bulkAction);
+router.post('/customers/datatable', CustomersController.datatable);
 router.get('/customers/:id', CustomersController.show);
 router.get('/customers/:id/edit', CustomersController.edit);
-router.put('/customers/:id', CustomersController.update);
+router.post('/customers/:id', CustomersController.update);
 router.delete('/customers/:id', CustomersController.destroy);
-router.post('/customers/datatable', CustomersController.datatable);
 router.patch('/customers/:id/toggle-status', CustomersController.toggleStatus);
 router.patch('/customers/:id/toggle-block', CustomersController.toggleBlock);
-router.post('/customers/:id/send-verification', CustomersController.sendVerification);
-router.get('/customers/export', CustomersController.exportData);
-router.post('/customers/bulk-action', CustomersController.bulkAction);
 
 // ===== ORDERS ROUTES =====
 router.get('/orders', OrdersController.index);
@@ -160,11 +158,6 @@ router.get('/faqs/:id/edit', FaqController.edit);
 router.post('/faqs/:id', FaqController.update);
 router.delete('/faqs/:id', FaqController.destroy);
 router.patch('/faqs/:id/toggle-status', FaqController.toggleStatus);
-
-
-// ===== ADDITIONAL CUSTOMER ROUTES =====
-router.get('/customers/:id/orders', CustomersController.showOrders);
-router.get('/customers/:id/addresses', CustomersController.showAddresses);
 
 // ===== ADDITIONAL ORDER ROUTES =====
 router.get('/orders/:id/invoice', OrdersController.showInvoice);

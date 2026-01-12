@@ -22,11 +22,6 @@
                         </button>
                     </li>
                     <li class="nav-item">
-                        <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#orders" role="tab">
-                            <i class="bx bx-receipt me-1"></i> Orders ({{ customer.totalOrders or 0 }})
-                        </button>
-                    </li>
-                    <li class="nav-item">
                         <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#addresses" role="tab">
                             <i class="bx bx-map me-1"></i> Addresses
                         </button>
@@ -102,7 +97,13 @@
                                 {% endif %}
                                 <div class="mb-2">
                                     <strong>Membership Tier:</strong>
-                                    <span class="badge bg-{{ 'warning' if customer.membershipTier == 'gold' or customer.membershipTier == 'platinum' else 'info' if customer.membershipTier == 'silver' else 'secondary' }}">
+                                    {% set tierClass = 'secondary' %}
+                                    {% if customer.membershipTier == 'gold' or customer.membershipTier == 'platinum' %}
+                                        {% set tierClass = 'warning' %}
+                                    {% elif customer.membershipTier == 'silver' %}
+                                        {% set tierClass = 'info' %}
+                                    {% endif %}
+                                    <span class="badge bg-{{ tierClass }}">
                                         {{ customer.membershipTier | title or 'Bronze' }}
                                     </span>
                                 </div>
@@ -119,32 +120,6 @@
                             {{ customer.adminNotes }}
                         </div>
                         {% endif %}
-                    </div>
-
-                    <!-- Orders Tab -->
-                    <div class="tab-pane fade" id="orders" role="tabpanel">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Order #</th>
-                                        <th>Date</th>
-                                        <th>Items</th>
-                                        <th>Amount</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- TODO: Populate with actual orders -->
-                                    <tr>
-                                        <td colspan="6" class="text-center text-muted py-4">
-                                            No orders found
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
                     </div>
 
                     <!-- Addresses Tab -->
@@ -287,14 +262,6 @@
                     <a href="/customers/{{ customer._id }}/edit" class="btn btn-primary">
                         <i class="bx bx-edit-alt"></i> Edit Customer
                     </a>
-                    <a href="/customers/{{ customer._id }}/orders" class="btn btn-outline-info">
-                        <i class="bx bx-receipt"></i> View Orders
-                    </a>
-                    {% if not customer.emailVerified %}
-                    <button type="button" class="btn btn-outline-warning" onclick="sendVerificationEmail()">
-                        <i class="bx bx-mail-send"></i> Send Verification
-                    </button>
-                    {% endif %}
                     {% if customer.isBlocked %}
                     <button type="button" class="btn btn-outline-success" onclick="toggleBlock(false)">
                         <i class="bx bx-check"></i> Unblock Customer

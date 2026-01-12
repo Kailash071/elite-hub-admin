@@ -7,65 +7,6 @@
 {% set currentPage = "orders" %}
 
 {% block content %}
-<!-- Statistics Cards -->
-<div class="row">
-  <div class="col-md-6 col-xl-3">
-    <div class="card">
-      <div class="card-body">
-        <div class="card-title d-flex align-items-start justify-content-between">
-          <div class="avatar flex-shrink-0">
-            <img src="/assets/img/icons/unicons/chart-success.png" alt="chart success" class="rounded" />
-          </div>
-        </div>
-        <span class="fw-semibold d-block mb-1">Total Orders</span>
-        <h3 class="card-title mb-2">{{ stats.totalOrders or '12,486' }}</h3>
-        <small class="text-success fw-semibold"><i class="bx bx-up-arrow-alt"></i> {{ stats.ordersGrowth or '+22.5%' }}</small>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-6 col-xl-3">
-    <div class="card">
-      <div class="card-body">
-        <div class="card-title d-flex align-items-start justify-content-between">
-          <div class="avatar flex-shrink-0">
-            <img src="/assets/img/icons/unicons/wallet-info.png" alt="wallet info" class="rounded" />
-          </div>
-        </div>
-        <span class="fw-semibold d-block mb-1">Pending Orders</span>
-        <h3 class="card-title text-nowrap mb-1">{{ stats.pendingOrders or '328' }}</h3>
-        <small class="text-warning fw-semibold"><i class="bx bx-time"></i> Pending</small>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-6 col-xl-3">
-    <div class="card">
-      <div class="card-body">
-        <div class="card-title d-flex align-items-start justify-content-between">
-          <div class="avatar flex-shrink-0">
-            <img src="/assets/img/icons/unicons/cc-success.png" alt="Credit Card" class="rounded" />
-          </div>
-        </div>
-        <span class="d-block mb-1">Completed Orders</span>
-        <h3 class="card-title text-nowrap mb-2">{{ stats.completedOrders or '9,847' }}</h3>
-        <small class="text-success fw-semibold"><i class="bx bx-check-circle"></i> Delivered</small>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-6 col-xl-3">
-    <div class="card">
-      <div class="card-body">
-        <div class="card-title d-flex align-items-start justify-content-between">
-          <div class="avatar flex-shrink-0">
-            <img src="/assets/img/icons/unicons/paypal.png" alt="paypal" class="rounded" />
-          </div>
-        </div>
-        <span class="d-block mb-1">Total Revenue</span>
-        <h3 class="card-title text-nowrap mb-2">${{ stats.totalRevenue or '287,592' }}</h3>
-        <small class="text-info fw-semibold"><i class="bx bx-dollar"></i> Revenue</small>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- Orders Table -->
 <div class="card">

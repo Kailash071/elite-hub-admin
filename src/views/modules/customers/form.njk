@@ -9,10 +9,8 @@
 {% set currentPage = "customers" %}
 
 {% block content %}
-<form id="customerForm" action="{{ '/customers/' + customer._id if customer else '/customers' }}" method="POST" novalidate>
-    {% if customer %}
-    <input type="hidden" name="_method" value="PUT">
-    {% endif %}
+<form id="customerForm" action="{{ '/customers/' + customer._id if customer else '/customers' }}" method="POST" e>
+
     
     <div class="row">
         <!-- Main Customer Information -->
@@ -176,7 +174,7 @@
                         <div class="tab-pane fade" id="addresses" role="tabpanel">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h6>Customer Addresses</h6>
-                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addAddress()">
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="btnAddAddress">
                                     <i class="bx bx-plus"></i> Add Address
                                 </button>
                             </div>
@@ -192,7 +190,7 @@
                                             <span class="badge bg-label-primary ms-2">Default</span>
                                             {% endif %}
                                         </h6>
-                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeAddress({{ loop.index0 }})">
+                                        <button type="button" class="btn btn-sm btn-outline-danger remove-address-btn">
                                             <i class="bx bx-trash"></i>
                                         </button>
                                     </div>
@@ -303,7 +301,13 @@
                                             </div>
                                             <div class="d-flex justify-content-between">
                                                 <span class="text-muted">Membership:</span>
-                                                <span class="badge bg-label-{{ 'warning' if customer.membershipTier == 'gold' or customer.membershipTier == 'platinum' else 'info' if customer.membershipTier == 'silver' else 'secondary' }}">
+                                                {% set tierColor = 'secondary' %}
+                                                {% if customer.membershipTier == 'gold' or customer.membershipTier == 'platinum' %}
+                                                    {% set tierColor = 'warning' %}
+                                                {% elif customer.membershipTier == 'silver' %}
+                                                    {% set tierColor = 'info' %}
+                                                {% endif %}
+                                                <span class="badge bg-label-{{ tierColor }}">
                                                     {{ customer.membershipTier | title or 'Bronze' }}
                                                 </span>
                                             </div>
@@ -477,14 +481,6 @@
                             Back to Customers
                         </a>
                         {% if customer %}
-                        <a href="/customers/{{ customer._id }}/orders" class="btn btn-outline-info">
-                            <i class="bx bx-receipt"></i>
-                            View Orders ({{ customer.totalOrders or 0 }})
-                        </a>
-                        <button type="button" class="btn btn-outline-warning" onclick="sendVerificationEmail()">
-                            <i class="bx bx-mail-send"></i>
-                            Resend Verification
-                        </button>
                         <button type="button" class="btn btn-outline-danger" onclick="deleteCustomer('{{ customer._id }}', '{{ customer.firstName }} {{ customer.lastName }}')">
                             <i class="bx bx-trash"></i>
                             Delete Customer
@@ -502,7 +498,7 @@
     <div class="address-item card mb-3" data-index="{{INDEX}}">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h6 class="mb-0">New Address</h6>
-            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeAddress({{INDEX}})">
+            <button type="button" class="btn btn-sm btn-outline-danger remove-address-btn">
                 <i class="bx bx-trash"></i>
             </button>
         </div>
@@ -515,15 +511,41 @@
 
 {% block js %}
 <script>
+// Initialize address index from existing data or start at 0
 let addressIndex = {{ customer.addresses.length if customer and customer.addresses else 0 }};
 
 document.addEventListener('DOMContentLoaded', function() {
     initializeForm();
     initializeBlockToggle();
+    initializeAddressEvents();
 });
+
+function initializeAddressEvents() {
+    // Add Address Button
+    const addBtn = document.getElementById('btnAddAddress');
+    if (addBtn) {
+        addBtn.addEventListener('click', addAddress);
+    }
+
+    // Remove Address Delegate
+    const container = document.getElementById('addressesContainer');
+    if (container) {
+        container.addEventListener('click', function(e) {
+            const btn = e.target.closest('.remove-address-btn');
+            if (btn) {
+                const item = btn.closest('.address-item');
+                if (item) {
+                    item.remove();
+                    checkEmptyAddresses();
+                }
+            }
+        });
+    }
+}
 
 function initializeForm() {
     const form = document.getElementById('customerForm');
+    if (!form) return;
     
     // Form submission
     form.addEventListener('submit', function(e) {
@@ -532,6 +554,65 @@ function initializeForm() {
         if (validateForm()) {
             submitForm();
         }
+    });
+}
+
+function submitForm() {
+    const form = document.getElementById('customerForm');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    // Show loading state
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+    
+    const formData = new FormData(form);
+    
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                title: 'Success!',
+                text: data.message,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                if (data.redirectUrl) {
+                    window.location.href = data.redirectUrl;
+                } else {
+                    window.location.href = '/customers';
+                }
+            });
+        } else {
+            if (data.errors) {
+                Object.keys(data.errors).forEach(fieldName => {
+                    if (fieldName.includes('.')) {
+                        // Handle nested errors like addresses.0.isDefault
+                        Swal.fire('Error!', data.message || 'Validation failed', 'error');
+                    } else {
+                        showFieldError(fieldName, data.errors[fieldName]);
+                    }
+                });
+            } else {
+                Swal.fire('Error!', data.message || 'Something went wrong', 'error');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire('Error!', 'Something went wrong', 'error');
+    })
+    .finally(() => {
+        // Reset button state
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
     });
 }
 
@@ -582,22 +663,27 @@ function validateForm() {
     
     {% if not customer %}
     // Password validation for new customers
-    const password = document.getElementById('password').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
+    const passwordElem = document.getElementById('password');
+    const confirmPasswordElem = document.getElementById('confirmPassword');
     
-    if (!password) {
-        showFieldError('password', 'Password is required');
-        return false;
-    }
-    
-    if (password.length < 6) {
-        showFieldError('password', 'Password must be at least 6 characters');
-        return false;
-    }
-    
-    if (password !== confirmPassword) {
-        showFieldError('confirmPassword', 'Passwords do not match');
-        return false;
+    if (passwordElem && confirmPasswordElem) {
+        const password = passwordElem.value;
+        const confirmPassword = confirmPasswordElem.value;
+        
+        if (!password) {
+            showFieldError('password', 'Password is required');
+            return false;
+        }
+        
+        if (password.length < 6) {
+            showFieldError('password', 'Password must be at least 6 characters');
+            return false;
+        }
+        
+        if (password !== confirmPassword) {
+            showFieldError('confirmPassword', 'Passwords do not match');
+            return false;
+        }
     }
     {% endif %}
     
@@ -606,6 +692,8 @@ function validateForm() {
 
 function showFieldError(fieldName, message) {
     const field = document.getElementById(fieldName);
+    if (!field) return;
+
     const feedback = field.parentNode.querySelector('.invalid-feedback');
     
     field.classList.add('is-invalid');
@@ -621,7 +709,7 @@ function showFieldError(fieldName, message) {
     if (tab) {
         const tabId = tab.getAttribute('id');
         const tabButton = document.querySelector(`[data-bs-target="#${tabId}"]`);
-        if (tabButton) {
+        if (tabButton && window.bootstrap) {
             const tabInstance = new bootstrap.Tab(tabButton);
             tabInstance.show();
         }
@@ -634,63 +722,10 @@ function clearFieldErrors() {
     });
 }
 
-function submitForm() {
-    const form = document.getElementById('customerForm');
-    const submitBtn = form.querySelector('button[type="submit"]');
-    const originalText = submitBtn.innerHTML;
-    
-    // Show loading state
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
-    
-    const formData = new FormData(form);
-    
-    fetch(form.action, {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            Swal.fire({
-                title: 'Success!',
-                text: data.message,
-                icon: 'success',
-                confirmButtonText: 'OK'
-            }).then(() => {
-                if (data.redirectUrl) {
-                    window.location.href = data.redirectUrl;
-                } else {
-                    window.location.href = '/customers';
-                }
-            });
-        } else {
-            if (data.errors) {
-                Object.keys(data.errors).forEach(fieldName => {
-                    showFieldError(fieldName, data.errors[fieldName]);
-                });
-            } else {
-                Swal.fire('Error!', data.message || 'Something went wrong', 'error');
-            }
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        Swal.fire('Error!', 'Something went wrong', 'error');
-    })
-    .finally(() => {
-        // Reset button state
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalText;
-    });
-}
-
 function addAddress() {
     const container = document.getElementById('addressesContainer');
     const template = document.getElementById('addressTemplate');
+    if (!container || !template) return;
     
     // Remove empty state message if it exists
     const emptyState = container.querySelector('.text-center');
@@ -699,35 +734,17 @@ function addAddress() {
     }
     
     const newAddress = template.content.cloneNode(true);
-    const addressHtml = newAddress.querySelector('.address-item');
+    const addressItem = newAddress.querySelector('.address-item');
     
-    // Replace index placeholder
-    addressHtml.innerHTML = addressHtml.innerHTML.replace(/{{INDEX}}/g, addressIndex);
+    // Set index attribute
+    addressItem.dataset.index = addressIndex;
     
-    // Add address form fields
-    const cardBody = addressHtml.querySelector('.card-body');
+    // Generate form fields
+    const cardBody = addressItem.querySelector('.card-body');
     cardBody.innerHTML = generateAddressForm(addressIndex);
     
-    container.appendChild(addressHtml);
+    container.appendChild(addressItem);
     addressIndex++;
-}
-
-function removeAddress(index) {
-    const addressItem = document.querySelector(`.address-item[data-index="${index}"]`);
-    if (addressItem) {
-        addressItem.remove();
-    }
-    
-    // Show empty state if no addresses left
-    const container = document.getElementById('addressesContainer');
-    if (container.children.length === 0) {
-        container.innerHTML = `
-            <div class="text-center text-muted py-4">
-                <i class="bx bx-map fs-1 d-block mb-2"></i>
-                <p>No addresses added yet</p>
-            </div>
-        `;
-    }
 }
 
 function generateAddressForm(index) {
@@ -753,49 +770,89 @@ function generateAddressForm(index) {
             <div class="col-md-6">
                 <div class="mb-3">
                     <label class="form-label">First Name</label>
-                    <input type="text" class="form-control" name="addresses[${index}][firstName]" required>
+                    <input type="text" 
+                           class="form-control" 
+                           name="addresses[${index}][firstName]" 
+                           required>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="mb-3">
                     <label class="form-label">Last Name</label>
-                    <input type="text" class="form-control" name="addresses[${index}][lastName]" required>
+                    <input type="text" 
+                           class="form-control" 
+                           name="addresses[${index}][lastName]" 
+                           required>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="mb-3">
+                    <label class="form-label">Company (Optional)</label>
+                    <input type="text" 
+                           class="form-control" 
+                           name="addresses[${index}][company]">
                 </div>
             </div>
             <div class="col-12">
                 <div class="mb-3">
                     <label class="form-label">Address Line 1</label>
-                    <input type="text" class="form-control" name="addresses[${index}][addressLine1]" required>
+                    <input type="text" 
+                           class="form-control" 
+                           name="addresses[${index}][addressLine1]" 
+                           required>
                 </div>
             </div>
             <div class="col-12">
                 <div class="mb-3">
-                    <label class="form-label">Address Line 2</label>
-                    <input type="text" class="form-control" name="addresses[${index}][addressLine2]">
+                    <label class="form-label">Address Line 2 (Optional)</label>
+                    <input type="text" 
+                           class="form-control" 
+                           name="addresses[${index}][addressLine2]">
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="mb-3">
                     <label class="form-label">City</label>
-                    <input type="text" class="form-control" name="addresses[${index}][city]" required>
+                    <input type="text" 
+                           class="form-control" 
+                           name="addresses[${index}][city]" 
+                           required>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="mb-3">
                     <label class="form-label">State</label>
-                    <input type="text" class="form-control" name="addresses[${index}][state]" required>
+                    <input type="text" 
+                           class="form-control" 
+                           name="addresses[${index}][state]" 
+                           required>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="mb-3">
                     <label class="form-label">Postal Code</label>
-                    <input type="text" class="form-control" name="addresses[${index}][postalCode]" required>
+                    <input type="text" 
+                           class="form-control" 
+                           name="addresses[${index}][postalCode]" 
+                           required>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="mb-3">
                     <label class="form-label">Country</label>
-                    <input type="text" class="form-control" name="addresses[${index}][country]" value="India" required>
+                    <input type="text" 
+                           class="form-control" 
+                           name="addresses[${index}][country]" 
+                           value="India" 
+                           required>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Phone (Optional)</label>
+                    <input type="tel" 
+                           class="form-control" 
+                           name="addresses[${index}][phone]">
                 </div>
             </div>
         </div>

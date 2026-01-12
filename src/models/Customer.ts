@@ -23,20 +23,20 @@ export interface ICustomer extends Document {
   phone?: string;
   dateOfBirth?: Date;
   gender?: 'male' | 'female' | 'other';
-  
+  isDeleted: boolean;
   // Account Security
   password: string;
   emailVerified: boolean;
   phoneVerified: boolean;
-  
+
   // Account Status
   isActive: boolean;
   isBlocked: boolean;
   blockReason?: string;
-  
+
   // Addresses
   addresses: ICustomerAddress[];
-  
+
   // Preferences
   preferences: {
     newsletter: boolean;
@@ -45,26 +45,26 @@ export interface ICustomer extends Document {
     language: string;
     currency: string;
   };
-  
+
   // Customer Metrics
   totalOrders: number;
   totalSpent: number;
   averageOrderValue: number;
-  
+
   // Account Management
   lastLoginAt?: Date;
   passwordResetToken?: string;
   passwordResetExpires?: Date;
   emailVerificationToken?: string;
   emailVerificationExpires?: Date;
-  
+
   // Loyalty Program
   loyaltyPoints: number;
   membershipTier?: 'bronze' | 'silver' | 'gold' | 'platinum';
-  
+
   // Notes (Admin use)
   adminNotes?: string;
-  
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -173,7 +173,7 @@ const customerSchema = new Schema<ICustomer>({
     type: String,
     enum: ['male', 'female', 'other']
   },
-  
+
   // Account Security
   password: {
     type: String,
@@ -188,7 +188,7 @@ const customerSchema = new Schema<ICustomer>({
     type: Boolean,
     default: false
   },
-  
+
   // Account Status
   isActive: {
     type: Boolean,
@@ -202,10 +202,13 @@ const customerSchema = new Schema<ICustomer>({
     type: String,
     trim: true
   },
-  
+  isDeleted: {
+    type: Boolean,
+    default: false
+  },
   // Addresses
   addresses: [customerAddressSchema],
-  
+
   // Preferences
   preferences: {
     newsletter: {
@@ -231,7 +234,7 @@ const customerSchema = new Schema<ICustomer>({
       maxlength: 10
     }
   },
-  
+
   // Customer Metrics
   totalOrders: {
     type: Number,
@@ -248,14 +251,14 @@ const customerSchema = new Schema<ICustomer>({
     default: 0,
     min: 0
   },
-  
+
   // Account Management
   lastLoginAt: Date,
   passwordResetToken: String,
   passwordResetExpires: Date,
   emailVerificationToken: String,
   emailVerificationExpires: Date,
-  
+
   // Loyalty Program
   loyaltyPoints: {
     type: Number,
@@ -267,7 +270,7 @@ const customerSchema = new Schema<ICustomer>({
     enum: ['bronze', 'silver', 'gold', 'platinum'],
     default: 'bronze'
   },
-  
+
   // Admin Notes
   adminNotes: {
     type: String,
@@ -278,7 +281,6 @@ const customerSchema = new Schema<ICustomer>({
 });
 
 // Indexes
-customerSchema.index({ email: 1 }, { unique: true });
 customerSchema.index({ phone: 1 });
 customerSchema.index({ isActive: 1 });
 customerSchema.index({ isBlocked: 1 });
@@ -298,17 +300,17 @@ customerSchema.index({
 });
 
 // Virtual for full name
-customerSchema.virtual('fullName').get(function() {
+customerSchema.virtual('fullName').get(function () {
   return `${this.firstName} ${this.lastName}`;
 });
 
 // Virtual for default shipping address
-customerSchema.virtual('defaultShippingAddress').get(function() {
+customerSchema.virtual('defaultShippingAddress').get(function () {
   return this.addresses.find(addr => addr.type === 'shipping' && addr.isDefault);
 });
 
 // Virtual for default billing address
-customerSchema.virtual('defaultBillingAddress').get(function() {
+customerSchema.virtual('defaultBillingAddress').get(function () {
   return this.addresses.find(addr => addr.type === 'billing' && addr.isDefault);
 });
 

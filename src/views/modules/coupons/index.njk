@@ -7,65 +7,7 @@
 {% set currentPage = "coupons" %}
 
 {% block content %}
-<!-- Statistics Cards -->
-<div class="row">
-  <div class="col-md-6 col-xl-3">
-    <div class="card">
-      <div class="card-body">
-        <div class="card-title d-flex align-items-start justify-content-between">
-          <div class="avatar flex-shrink-0">
-            <img src="/assets/img/icons/unicons/chart-success.png" alt="chart success" class="rounded" />
-          </div>
-        </div>
-        <span class="fw-semibold d-block mb-1">Total Coupons</span>
-        <h3 class="card-title mb-2">{{ stats.totalCoupons or '47' }}</h3>
-        <small class="text-success fw-semibold"><i class="bx bx-up-arrow-alt"></i> {{ stats.couponsGrowth or '+8.2%' }}</small>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-6 col-xl-3">
-    <div class="card">
-      <div class="card-body">
-        <div class="card-title d-flex align-items-start justify-content-between">
-          <div class="avatar flex-shrink-0">
-            <img src="/assets/img/icons/unicons/wallet-info.png" alt="wallet info" class="rounded" />
-          </div>
-        </div>
-        <span class="fw-semibold d-block mb-1">Active Coupons</span>
-        <h3 class="card-title text-nowrap mb-1">{{ stats.activeCoupons or '32' }}</h3>
-        <small class="text-success fw-semibold"><i class="bx bx-check-circle"></i> Active</small>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-6 col-xl-3">
-    <div class="card">
-      <div class="card-body">
-        <div class="card-title d-flex align-items-start justify-content-between">
-          <div class="avatar flex-shrink-0">
-            <img src="/assets/img/icons/unicons/cc-primary.png" alt="Credit Card" class="rounded" />
-          </div>
-        </div>
-        <span class="d-block mb-1">Total Usage</span>
-        <h3 class="card-title text-nowrap mb-2">{{ stats.totalUsage or '1,247' }}</h3>
-        <small class="text-info fw-semibold"><i class="bx bx-receipt"></i> Uses</small>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-6 col-xl-3">
-    <div class="card">
-      <div class="card-body">
-        <div class="card-title d-flex align-items-start justify-content-between">
-          <div class="avatar flex-shrink-0">
-            <img src="/assets/img/icons/unicons/paypal.png" alt="paypal" class="rounded" />
-          </div>
-        </div>
-        <span class="d-block mb-1">Total Savings</span>
-        <h3 class="card-title text-nowrap mb-2">${{ stats.totalSavings or '45,892' }}</h3>
-        <small class="text-warning fw-semibold"><i class="bx bx-dollar"></i> Saved</small>
-      </div>
-    </div>
-  </div>
-</div>
+
 
 <!-- Coupons Table -->
 <div class="card">

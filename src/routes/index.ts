@@ -1,5 +1,5 @@
 import express, { type Request, type Response } from 'express';
-import adminRoutes from './views.js';
+import adminRoutes from './views';
 
 const router = express.Router();
 

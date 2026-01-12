@@ -27,12 +27,15 @@ export const deleteCustomerById = async (id: string) => {
 };
 
 export const findCustomers = async (query: any = {}, options: any = {}) => {
-  const { page = 1, limit = 25, sort = { createdAt: -1 } } = options;
+  const { page = 1, limit = 25, sort = { createdAt: -1 }, select } = options;
   const skip = (page - 1) * limit;
-  
+
+  const defaultSelect = '-password -passwordResetToken -passwordResetExpires';
+  const projection = select || defaultSelect;
+
   return {
     customers: await Customer.find(query)
-      .select('-password -passwordResetToken -passwordResetExpires')
+      .select(projection)
       .sort(sort)
       .skip(skip)
       .limit(limit)
@@ -47,4 +50,26 @@ export const countCustomers = async (query: any = {}) => {
 
 export const customerExists = async (query: any) => {
   return await Customer.exists(query);
+};
+
+export const bulkDeleteByIds = async (ids: string[]) => {
+  return await Customer.deleteMany({ _id: { $in: ids } });
+};
+
+export const bulkUpdateStatus = async (ids: string[], isActive: boolean) => {
+  return await Customer.updateMany(
+    { _id: { $in: ids } },
+    { isActive: isActive }
+  );
+};
+
+export const bulkUpdateBlockStatus = async (ids: string[], isBlocked: boolean) => {
+  return await Customer.updateMany(
+    { _id: { $in: ids } },
+    { isBlocked: isBlocked }
+  );
+};
+
+export const updateMany = async (query: any, updateData: any) => {
+  return await Customer.updateMany(query, updateData);
 };

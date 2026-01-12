@@ -7,65 +7,6 @@
 {% set currentPage = "customers" %}
 
 {% block content %}
-<!-- Statistics Cards -->
-<div class="row">
-  <div class="col-md-6 col-xl-3">
-    <div class="card">
-      <div class="card-body">
-        <div class="card-title d-flex align-items-start justify-content-between">
-          <div class="avatar flex-shrink-0">
-            <img src="/assets/img/icons/unicons/chart-success.png" alt="chart success" class="rounded" />
-          </div>
-        </div>
-        <span class="fw-semibold d-block mb-1">Total Customers</span>
-        <h3 class="card-title mb-2">{{ stats.totalCustomers or '8,549' }}</h3>
-        <small class="text-success fw-semibold"><i class="bx bx-up-arrow-alt"></i> {{ stats.customersGrowth or '+18.4%' }}</small>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-6 col-xl-3">
-    <div class="card">
-      <div class="card-body">
-        <div class="card-title d-flex align-items-start justify-content-between">
-          <div class="avatar flex-shrink-0">
-            <img src="/assets/img/icons/unicons/wallet-info.png" alt="wallet info" class="rounded" />
-          </div>
-        </div>
-        <span class="fw-semibold d-block mb-1">Active Customers</span>
-        <h3 class="card-title text-nowrap mb-1">{{ stats.activeCustomers or '7,892' }}</h3>
-        <small class="text-success fw-semibold"><i class="bx bx-check-circle"></i> Active</small>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-6 col-xl-3">
-    <div class="card">
-      <div class="card-body">
-        <div class="card-title d-flex align-items-start justify-content-between">
-          <div class="avatar flex-shrink-0">
-            <img src="/assets/img/icons/unicons/cc-primary.png" alt="Credit Card" class="rounded" />
-          </div>
-        </div>
-        <span class="d-block mb-1">Verified Customers</span>
-        <h3 class="card-title text-nowrap mb-2">{{ stats.verifiedCustomers or '6,234' }}</h3>
-        <small class="text-info fw-semibold"><i class="bx bx-shield-check"></i> Verified</small>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-6 col-xl-3">
-    <div class="card">
-      <div class="card-body">
-        <div class="card-title d-flex align-items-start justify-content-between">
-          <div class="avatar flex-shrink-0">
-            <img src="/assets/img/icons/unicons/paypal.png" alt="paypal" class="rounded" />
-          </div>
-        </div>
-        <span class="d-block mb-1">VIP Customers</span>
-        <h3 class="card-title text-nowrap mb-2">{{ stats.vipCustomers or '342' }}</h3>
-        <small class="text-warning fw-semibold"><i class="bx bx-crown"></i> VIP</small>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- Customers Table -->
 <div class="card">
@@ -74,9 +15,6 @@
     <div class="d-flex gap-2">
       <button class="btn btn-outline-secondary btn-sm" onclick="refreshTable()">
         <i class="bx bx-refresh"></i> Refresh
-      </button>
-      <button class="btn btn-outline-success btn-sm" onclick="exportData()">
-        <i class="bx bx-download"></i> Export
       </button>
       <a href="/customers/add" class="btn btn-primary btn-sm">
         <i class="bx bx-plus"></i> Add Customer
@@ -123,10 +61,6 @@
           <option value="year">This Year</option>
         </select>
       </div>
-      <div class="col-md-3">
-        <label class="form-label">Search</label>
-        <input type="text" class="form-control" id="searchInput" placeholder="Search customers...">
-      </div>
       <div class="col-md-1">
         <label class="form-label">&nbsp;</label>
         <div class="d-grid">
@@ -147,134 +81,15 @@
             </th>
             <th>Customer</th>
             <th>Contact</th>
-            <th>Orders</th>
+            <!-- <th>Orders</th>
             <th>Total Spent</th>
-            <th>Membership</th>
+            <th>Membership</th> -->
             <th>Status</th>
             <th>Joined</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {% if customers and customers.length %}
-          {% for customer in customers %}
-          <tr data-id="{{ customer._id }}">
-            <td>
-              <div class="form-check">
-                <input class="form-check-input row-checkbox" type="checkbox" value="{{ customer._id }}">
-              </div>
-            </td>
-            <td>
-              <div class="d-flex align-items-center">
-                <div class="avatar avatar-sm me-3">
-                  <span class="avatar-initial rounded bg-label-primary">{{ customer.firstName.charAt(0).toUpperCase() }}{{ customer.lastName.charAt(0).toUpperCase() }}</span>
-                </div>
-                <div>
-                  <h6 class="mb-0">{{ customer.firstName }} {{ customer.lastName }}</h6>
-                  <small class="text-muted d-flex align-items-center">
-                    {{ customer.email }}
-                    {% if customer.emailVerified %}
-                      <i class="bx bx-badge-check text-success ms-1" title="Email Verified"></i>
-                    {% endif %}
-                  </small>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div>
-                {% if customer.phone %}
-                <small class="d-block">{{ customer.phone }}</small>
-                {% endif %}
-                {% if customer.phoneVerified %}
-                  <span class="badge bg-label-success">Phone Verified</span>
-                {% endif %}
-              </div>
-            </td>
-            <td>
-              <span class="badge bg-label-info">{{ customer.totalOrders or 0 }} Orders</span>
-            </td>
-            <td>
-              <strong>${{ customer.totalSpent or '0.00' }}</strong>
-              {% if customer.averageOrderValue %}
-              <small class="d-block text-muted">Avg: ${{ customer.averageOrderValue }}</small>
-              {% endif %}
-            </td>
-            <td>
-              {% if customer.membershipTier == 'platinum' %}
-                <span class="badge bg-label-warning">Platinum</span>
-              {% elif customer.membershipTier == 'gold' %}
-                <span class="badge bg-label-warning">Gold</span>
-              {% elif customer.membershipTier == 'silver' %}
-                <span class="badge bg-label-info">Silver</span>
-              {% else %}
-                <span class="badge bg-label-secondary">Bronze</span>
-              {% endif %}
-              {% if customer.loyaltyPoints %}
-              <small class="d-block text-muted">{{ customer.loyaltyPoints }} pts</small>
-              {% endif %}
-            </td>
-            <td>
-              {% if customer.isBlocked %}
-                <span class="badge bg-label-danger">Blocked</span>
-              {% elif customer.isActive %}
-                <span class="badge bg-label-success">Active</span>
-              {% else %}
-                <span class="badge bg-label-secondary">Inactive</span>
-              {% endif %}
-            </td>
-            <td>
-              {{ customer.createdAt | date('MMM DD, YYYY') }}
-              {% if customer.lastLoginAt %}
-              <small class="d-block text-muted">Last: {{ customer.lastLoginAt | date('MMM DD') }}</small>
-              {% endif %}
-            </td>
-            <td>
-              <div class="dropdown">
-                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                  <i class="bx bx-dots-vertical-rounded"></i>
-                </button>
-                <div class="dropdown-menu">
-                  <a class="dropdown-item" href="/customers/{{ customer._id }}">
-                    <i class="bx bx-show me-1"></i> View Details
-                  </a>
-                  <a class="dropdown-item" href="/customers/{{ customer._id }}/edit">
-                    <i class="bx bx-edit-alt me-1"></i> Edit
-                  </a>
-                  <a class="dropdown-item" href="/customers/{{ customer._id }}/orders">
-                    <i class="bx bx-receipt me-1"></i> View Orders
-                  </a>
-                  <a class="dropdown-item" href="/customers/{{ customer._id }}/addresses">
-                    <i class="bx bx-map me-1"></i> Manage Addresses
-                  </a>
-                  <div class="dropdown-divider"></div>
-                  {% if customer.isBlocked %}
-                  <a class="dropdown-item" href="javascript:void(0);" onclick="toggleBlock('{{ customer._id }}', false)">
-                    <i class="bx bx-check me-1"></i> Unblock
-                  </a>
-                  {% else %}
-                  <a class="dropdown-item" href="javascript:void(0);" onclick="toggleBlock('{{ customer._id }}', true)">
-                    <i class="bx bx-block me-1"></i> Block Customer
-                  </a>
-                  {% endif %}
-                  {% if customer.isActive %}
-                  <a class="dropdown-item" href="javascript:void(0);" onclick="toggleStatus('{{ customer._id }}', false)">
-                    <i class="bx bx-hide me-1"></i> Deactivate
-                  </a>
-                  {% else %}
-                  <a class="dropdown-item" href="javascript:void(0);" onclick="toggleStatus('{{ customer._id }}', true)">
-                    <i class="bx bx-show me-1"></i> Activate
-                  </a>
-                  {% endif %}
-                  <div class="dropdown-divider"></div>
-                  <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteCustomer('{{ customer._id }}', '{{ customer.firstName }} {{ customer.lastName }}')">
-                    <i class="bx bx-trash me-1"></i> Delete
-                  </a>
-                </div>
-              </div>
-            </td>
-          </tr>
-          {% endfor %}
-          {% endif %}
         </tbody>
       </table>
     </div>
@@ -324,7 +139,7 @@
       <div class="modal-body">
         <div class="mb-3">
           <label class="form-label">Reason for blocking</label>
-          <textarea class="form-control" id="blockReason" rows="3" placeholder="Enter reason for blocking this customer"></textarea>
+          <textarea class="form-control" id="blockReason" rows="3" placeholder="Enter reason for blocking this customer" required></textarea>
         </div>
       </div>
       <div class="modal-footer">
@@ -337,7 +152,6 @@
 {% endblock %}
 
 {% block js %}
-<script src="/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
 <script>
 let customersTable;
 let blockingCustomerId = null;
@@ -359,19 +173,134 @@ function initializeDataTable() {
         d.verification = $('#filterVerification').val();
         d.membership = $('#filterMembership').val();
         d.registration = $('#filterRegistration').val();
-        d.search = $('#searchInput').val();
       }
     },
     columns: [
-      { data: 'checkbox', orderable: false, searchable: false },
-      { data: 'customer', name: 'firstName' },
-      { data: 'contact', name: 'email' },
-      { data: 'orders', name: 'totalOrders' },
-      { data: 'totalSpent', name: 'totalSpent' },
-      { data: 'membership', name: 'membershipTier' },
-      { data: 'status', name: 'isActive' },
-      { data: 'joinDate', name: 'createdAt' },
-      { data: 'actions', orderable: false, searchable: false }
+      { 
+        data: '_id', 
+        orderable: false, 
+        searchable: false,
+        render: function(data) {
+          return `<div class="form-check"><input class="form-check-input row-checkbox" type="checkbox" value="${data}"></div>`;
+        }
+      },
+      { 
+        data: 'firstName', 
+        name: 'firstName',
+        render: function(data, type, row) {
+          const fullName = `${row.firstName} ${row.lastName}`;
+          const initials = (row.firstName.charAt(0) + row.lastName.charAt(0)).toUpperCase();
+          const verifiedIcon = row.emailVerified ? '<i class="bx bx-badge-check text-success ms-1" title="Email Verified"></i>' : '';
+          return `<div class="d-flex align-items-center">
+                    <div class="avatar avatar-sm me-3">
+                      <span class="avatar-initial rounded bg-label-primary">${initials}</span>
+                    </div>
+                    <div>
+                      <h6 class="mb-0">${fullName}</h6>
+                      <small class="text-muted d-flex align-items-center">${row.email} ${verifiedIcon}</small>
+                    </div>
+                  </div>`;
+        }
+      },
+      { 
+        data: 'phone', 
+        name: 'phone',
+        render: function(data, type, row) {
+          if (!data) return '<span class="text-muted">-</span>';
+          const verifiedBadge = row.phoneVerified ? '<br><span class="badge bg-label-success">Phone Verified</span>' : '';
+          return `<small class="d-block">${data}</small>${verifiedBadge}`;
+        }
+      },
+      // { 
+      //   data: 'totalOrders', 
+      //   name: 'totalOrders',
+      //   render: function(data) {
+      //     return `<span class="badge bg-label-info">${data || 0} Orders</span>`;
+      //   }
+      // },
+      // { 
+      //   data: 'totalSpent', 
+      //   name: 'totalSpent',
+      //   render: function(data) {
+      //     return `<strong>$${parseFloat(data || 0).toFixed(2)}</strong>`;
+      //   }
+      // },
+      // { 
+      //   data: 'membershipTier', 
+      //   name: 'membershipTier',
+      //   render: function(data) {
+      //     const colors = { 'bronze': 'secondary', 'silver': 'info', 'gold': 'warning', 'platinum': 'warning' };
+      //     const color = colors[data] || 'secondary';
+      //     return `<span class="badge bg-label-${color}">${data ? data.charAt(0).toUpperCase() + data.slice(1) : 'Bronze'}</span>`;
+      //   }
+      // },
+      { 
+        data: 'isActive', // Using isActive as the primary data point for status column
+        name: 'isActive',
+        render: function(data, type, row) {
+          if (row.isBlocked) {
+            return `<span class="badge bg-label-danger">Blocked</span>`;
+          } else if (row.isActive) {
+            return `<span class="badge bg-label-success">Active</span>`;
+          } else {
+            return `<span class="badge bg-label-secondary">Inactive</span>`;
+          }
+        }
+      },
+      { 
+        data: 'createdAt', 
+        name: 'createdAt',
+        render: function(data) {
+           return new Date(data).toLocaleDateString();
+        }
+      },
+      { 
+        data: '_id', 
+        orderable: false, 
+        searchable: false,
+        render: function(data, type, row) {
+          const isBlocked = row.isBlocked;
+          const isActive = row.isActive;
+          const fullName = `${row.firstName} ${row.lastName}`;
+          const id = row._id || data;
+          
+          if (!id) {
+             console.error('Missing ID for row:', row);
+             return '';
+          }
+          
+          // Escape single quotes effectively for JS string context
+          const safeName = fullName.replace(/'/g, "\\'");
+          
+          return `
+            <div class="dropdown">
+              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                <i class="bx bx-dots-vertical-rounded"></i>
+              </button>
+              <div class="dropdown-menu">
+                <a class="dropdown-item" href="/customers/${id}">
+                  <i class="bx bx-show me-1"></i> View Details
+                </a>
+                <a class="dropdown-item" href="/customers/${id}/edit">
+                  <i class="bx bx-edit-alt me-1"></i> Edit
+                </a>
+                <div class="dropdown-divider"></div>
+                ${isBlocked ? 
+                  `<a class="dropdown-item" href="javascript:void(0);" onclick="toggleBlock('${id}', false)"><i class="bx bx-check me-1"></i> Unblock</a>` : 
+                  `<a class="dropdown-item" href="javascript:void(0);" onclick="toggleBlock('${id}', true)"><i class="bx bx-block me-1"></i> Block</a>`
+                }
+                ${isActive ? 
+                  `<a class="dropdown-item" href="javascript:void(0);" onclick="toggleStatus('${id}', false)"><i class="bx bx-hide me-1"></i> Deactivate</a>` : 
+                  `<a class="dropdown-item" href="javascript:void(0);" onclick="toggleStatus('${id}', true)"><i class="bx bx-show me-1"></i> Activate</a>`
+                }
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteCustomer('${id}', '${safeName}')">
+                  <i class="bx bx-trash me-1"></i> Delete
+                </a>
+              </div>
+            </div>`;
+        }
+      }
     ],
     order: [[7, 'desc']],
     pageLength: 25,
@@ -419,17 +348,6 @@ function refreshTable() {
   customersTable.ajax.reload();
 }
 
-function exportData() {
-  const filters = {
-    status: $('#filterStatus').val(),
-    verification: $('#filterVerification').val(),
-    membership: $('#filterMembership').val(),
-    registration: $('#filterRegistration').val(),
-    search: $('#searchInput').val()
-  };
-  
-  window.open('/customers/export?' + new URLSearchParams(filters));
-}
 
 function toggleStatus(customerId, newStatus) {
   const action = newStatus ? 'activate' : 'deactivate';
@@ -493,7 +411,7 @@ function confirmBlock() {
   const reason = $('#blockReason').val().trim();
   
   if (!reason) {
-    Swal.fire('Error!', 'Please provide a reason for blocking', 'error');
+    alert('Please provide a reason for blocking');
     return;
   }
   
@@ -506,7 +424,6 @@ function performBlock(customerId, block, reason) {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
-      'X-Requested-With': 'XMLHttpRequest'
     },
     body: JSON.stringify({ 
       isBlocked: block,
@@ -528,6 +445,12 @@ function performBlock(customerId, block, reason) {
 }
 
 function deleteCustomer(customerId, customerName) {
+  if (!customerId) {
+    console.error('Attempted to delete customer with no ID');
+    Swal.fire('Error!', 'Invalid customer ID', 'error');
+    return;
+  }
+
   Swal.fire({
     title: 'Delete Customer?',
     text: `Are you sure you want to delete "${customerName}"? This will permanently remove all customer data including orders and addresses.`,
@@ -542,7 +465,6 @@ function deleteCustomer(customerId, customerName) {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
         }
       })
       .then(response => response.json())
@@ -555,6 +477,7 @@ function deleteCustomer(customerId, customerName) {
         }
       })
       .catch(error => {
+        console.error('Delete error:', error);
         Swal.fire('Error!', 'Something went wrong', 'error');
       });
     }
@@ -567,6 +490,7 @@ function bulkAction(action) {
   }).get();
 
   if (selectedIds.length === 0) {
+    $('#bulkActionModal').modal('hide');
     Swal.fire('Warning!', 'Please select at least one customer', 'warning');
     return;
   }
@@ -578,7 +502,7 @@ function bulkAction(action) {
     unblock: 'unblock',
     delete: 'delete'
   };
-
+  $('#bulkActionModal').modal('hide');
   Swal.fire({
     title: `${actionText[action].charAt(0).toUpperCase() + actionText[action].slice(1)} Customers?`,
     text: `Are you sure you want to ${actionText[action]} ${selectedIds.length} selected customers?`,
@@ -593,7 +517,6 @@ function bulkAction(action) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
         },
         body: JSON.stringify({
           action: action,
